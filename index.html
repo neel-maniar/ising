@@ -6,8 +6,99 @@
     canvas { image-rendering: pixelated; border: 1px solid black; }
     #controls { margin-top: 10px; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 </head>
 <body>
+
+<h1 style="text-align:center; margin-top:20px; font-family: Arial, sans-serif;">
+  Ising Model Simulator
+</h1>
+
+<div style="margin-bottom:10px;">
+  <button id="accordionBtn" style="font-weight:bold; cursor:pointer;">
+    What is this model? &#9660; <!-- ▼ -->
+  </button>
+  <div id="accordionContent" style="display:none; padding:10px; border:1px solid #ccc; margin-top:5px;">
+    <p><strong>tl;dr:</strong> Turns out that magnets lose their magnetism when heated up above a certain temperature, and this happens very suddenly. This is an example of a critical point, or a state change. Let's model it.</p>
+    <ol>
+      <li>Magnets are made of small magnets. Say these small magnets can only align up or down, and call this property "spin: {-1,1}"</li>
+      <li>The small magnets like to be the same orientation as their neighbours - it lowers the energy of the system. When everything aligns, we get magnetism.</li>
+      <li>Higher temperatures lend themselves to more random "higher entropy" states</li>
+      <li>So there is this battle between the energy, that wants <strong>order</strong>, and entropy, that wants <strong>chaos</strong>. And temperature is a parameter that controls this balance</li>
+      <li>Below a certain critical <em>"Curie"</em> temperature, we get total order - <strong>magnetism</strong>. Above this temperature, we get total chaos - <strong>demagnetisation</strong></li>
+      <li>Exactly at this temperature, we get very weird phenomena!</li>
+    </ol>
+  </div>
+</div>
+
+<div id="mathDescription" style="margin-top:10px;">
+  <p>
+    Mathematically, the Ising model defines the energy of a lattice of spins \(s_i \in \{-1,1\}\) as:
+  </p>
+  <p style="text-align:center; font-size:1.1em;">
+    \( H = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i \)
+  </p>
+  <p>
+    where:
+    <ul>
+      <li>\(J\) is the interaction strength between neighboring spins</li>
+      <li>\(\langle i,j \rangle\) indicates the sum over nearest neighbor pairs</li>
+      <li>\(h\) is an external magnetic field (here, \(h=0\))</li>
+    </ul>
+  </p>
+  <p>
+    The simulation evolves the lattice to minimize the energy while balancing thermal fluctuations, controlled by the temperature \(T\) (or \(\beta = 1/k_B T\)).
+  </p>
+</div>
+
+<div style="margin-top:10px;">
+  <button id="accordionNumBtn" style="font-weight:bold; cursor:pointer;">
+    Simulation Details &#9660; <!-- ▼ -->
+  </button>
+  <div id="accordionNumContent" style="display:none; padding:10px; border:1px solid #ccc; margin-top:5px;">
+    <p>
+      The simulation numerically implements the Metropolis-Hastings algorithm for the Ising model:
+    </p>
+    <ul>
+      <li>Each spin \(s_i \in \{-1,1\}\) is updated randomly.</li>
+      <li>The energy change for flipping a spin is:
+        <span style="display:block; text-align:center;">
+          \( \Delta E = 2 s_i \sum_{j \in \text{neighbors}(i)} s_j \)
+        </span>
+      </li>
+      <li>The spin flip is accepted with probability:
+        <span style="display:block; text-align:center;">
+          \( P = \min(1, e^{-\beta \Delta E}) \)
+        </span>
+      </li>
+      <li>I use a checkerboard (red-black) update scheme for efficiency.</li>
+      <li>Steps per frame and boundary conditions are adjustable, allowing faster simulation and different lattice edges.</li>
+    </ul>
+    <p>
+      The lattice magnetisation is computed as:
+      <span style="display:block; text-align:center;">
+        \( M = \frac{1}{N} \sum_i s_i \)
+      </span>
+      and displayed as a graph alongside the lattice.
+    </p>
+  </div>
+</div>
+
+<div style="margin-top:10px;">
+  <p>
+    <strong>Controls and Observations:</strong>  
+    Use the sliders and radio buttons to interact with the simulation:
+  </p>
+  <ul>
+    <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks. At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
+    <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
+    <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
+  </ul>
+  <p>
+    The live magnetisation graph below shows the average spin of the whole lattice. Close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised.
+  </p>
+</div>
+
 
 <canvas id="canvas"></canvas>
 <canvas id="graphCanvas" width="400" height="100" style="border:1px solid black; display:block; margin-top:10px;"></canvas>
@@ -16,8 +107,8 @@
   <label>Temperature: <span id="tempVal" style="display:inline-block; width:30px; text-align:right;">2.5</span></label>
   <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
 
-  <label style="margin-left:20px;">Magnetization: 
-    <span id="magVal" style="display:inline-block; width:50px; text-align:right; font-family: monospace;">0</span>
+  <label style="margin-left:20px;">Magnetisation: 
+    <span id="magVal" style="display:inline-block; width:50px; text-align:right;">0</span>
   </label>
 
   <label style="margin-left:20px;">Speed: <span id="speedVal" style="display:inline-block; width:30px; text-align:right;">1</span> steps/frame</label>
@@ -32,6 +123,32 @@
 </div>
 
 <script>
+const accordionBtn = document.getElementById("accordionBtn");
+const accordionContent = document.getElementById("accordionContent");
+
+accordionBtn.addEventListener("click", () => {
+  if(accordionContent.style.display === "none") {
+    accordionContent.style.display = "block";
+    accordionBtn.textContent = "What is this model? \u25B2";
+  } else {
+    accordionContent.style.display = "none";
+    accordionBtn.textContent = "What is this model? \u25BC";
+  }
+});
+
+const accordionNumBtn = document.getElementById("accordionNumBtn");
+const accordionNumContent = document.getElementById("accordionNumContent");
+
+accordionNumBtn.addEventListener("click", () => {
+  if(accordionNumContent.style.display === "none") {
+    accordionNumContent.style.display = "block";
+    accordionNumBtn.textContent = "Simulation Details \u25B2";
+  } else {
+    accordionNumContent.style.display = "none";
+    accordionNumBtn.textContent = "Simulation Details \u25BC";
+  }
+});
+
 const L = 300;   // lattice size
 const scale = 1;  // pixels per lattice site
 

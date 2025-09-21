@@ -41,14 +41,19 @@ function getSpin(i,j) {
 }
 
 function metropolisStep() {
-  for(let n=0;n<L*L;n++){
-    const i = Math.floor(Math.random()*L);
-    const j = Math.floor(Math.random()*L);
-    const idx = i*L + j;
-    const s = lattice[idx];
-    const nb = getSpin(i+1,j)+getSpin(i-1,j)+getSpin(i,j+1)+getSpin(i,j-1);
-    const dE = 2*s*nb;
-    if(dE<=0 || Math.random()<expTable[dE] || (dE===0 && Math.random()<0.5)) lattice[idx]=-s;
+  // do two half-steps: red and black
+  for (let color = 0; color <= 1; color++) { // 0=red, 1=black
+    for (let i = 0; i < L; i++) {
+      for (let j = (i + color) % 2; j < L; j += 2) {
+        const idx = i * L + j;
+        const s = lattice[idx];
+        const nb = getSpin(i+1,j)+getSpin(i-1,j)+getSpin(i,j+1)+getSpin(i,j-1);
+        const dE = 2*s*nb;
+        if(dE <= 0 || Math.random() < expTable[dE] || (dE === 0 && Math.random()<0.5)) {
+          lattice[idx] = -s;
+        }
+      }
+    }
   }
 }
 
