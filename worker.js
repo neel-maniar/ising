@@ -40,6 +40,12 @@ function metropolisStep() {
 function runSimulation() {
   setInterval(() => {
     metropolisStep();
-    postMessage({ type: "frame", lattice: lattice });
+
+    // compute magnetization
+    let sum = 0;
+    for (let i = 0; i < lattice.length; i++) sum += lattice[i];
+    const M = sum / lattice.length;
+
+    postMessage({ type: "frame", lattice: lattice, mag: M });
   }, 30);
 }
