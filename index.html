@@ -27,9 +27,10 @@
 
 <script>
 const L = 300; // lattice size
+const scale = 2; // each lattice site is 2x2 pixels
 const canvas = document.getElementById("canvas");
-canvas.width = L;
-canvas.height = L;
+canvas.width = L * scale;
+canvas.height = L * scale;
 const ctx = canvas.getContext("2d");
 
 const graphCanvas = document.getElementById("graphCanvas");
@@ -73,7 +74,7 @@ function drawLattice(lattice) {
   for (let i = 0; i < L; i++) {
     for (let j = 0; j < L; j++) {
       const idx = (i*L + j)*4;
-      const spin = lattice[i*L + j];  // flattened index
+      const spin = lattice[i*L + j];
       const color = spin > 0 ? 255 : 0;
       img.data[idx] = color;
       img.data[idx+1] = color;
@@ -81,7 +82,15 @@ function drawLattice(lattice) {
       img.data[idx+3] = 255;
     }
   }
-  ctx.putImageData(img, 0, 0);
+  // scale image when drawing
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = L;
+  tempCanvas.height = L;
+  tempCanvas.getContext("2d").putImageData(img, 0, 0);
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(tempCanvas, 0, 0, L*scale, L*scale);
 }
 
 function drawGraph() {
