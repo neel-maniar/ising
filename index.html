@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ising Model with Web Worker</title>
+  <title>Optimized Ising Model</title>
   <style>
     canvas { image-rendering: pixelated; border: 1px solid black; }
     #controls { margin-top: 10px; }
@@ -12,25 +12,29 @@
 <canvas id="canvas"></canvas>
 <canvas id="graphCanvas" width="400" height="100" style="border:1px solid black; display:block; margin-top:10px;"></canvas>
 
-
 <div id="controls">
-  <label>Temperature: <span id="tempVal" style="display:inline-block; width:20px; text-align:right;">2.5</span></label>
+  <label>Temperature: <span id="tempVal" style="display:inline-block; width:30px; text-align:right;">2.5</span></label>
   <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
-  
+
   <label style="margin-left:20px;">Magnetization: 
-    <span id="magVal" style="display:inline-block; width:50px; text-align:right;">0</span>
+    <span id="magVal" style="display:inline-block; width:50px; text-align:right; font-family: monospace;">0</span>
   </label>
-  
+
   <label style="margin-left:20px;">Speed: <span id="speedVal" style="display:inline-block; width:30px; text-align:right;">1</span> steps/frame</label>
-  <input type="range" id="speed" min="1" max="20" step="1" value="1">
+  <input type="range" id="speed" min="1" max="50" step="1" value="1">
+
+  <label style="margin-left:20px;">Boundary:</label>
+  <label><input type="radio" name="boundary" value="periodic" checked> Periodic</label>
+  <label><input type="radio" name="boundary" value="fixedUp"> Fixed +1</label>
+  <label><input type="radio" name="boundary" value="fixedDown"> Fixed -1</label>
 
   <label style="margin-left:20px;">FPS: <span id="fpsVal" style="display:inline-block; width:40px; text-align:right;">0</span></label>
-
 </div>
 
 <script>
-const L = 300; // lattice size
-const scale = 1; // each lattice site is 2x2 pixels
+const L = 300;   // lattice size
+const scale = 1;  // pixels per lattice site
+
 const canvas = document.getElementById("canvas");
 canvas.width = L * scale;
 canvas.height = L * scale;
@@ -38,20 +42,16 @@ const ctx = canvas.getContext("2d");
 
 const graphCanvas = document.getElementById("graphCanvas");
 const gCtx = graphCanvas.getContext("2d");
-const maxPoints = graphCanvas.width; // 1 pixel per frame
-let magHistory = []; // array of past magnetization values
+const maxPoints = graphCanvas.width;
+let magHistory = [];
 
-const speedSlider = document.getElementById("speed");
-const speedVal = document.getElementById("speedVal");
+// Worker
+const worker = new Worker("worker.js");
+worker.postMessage({ type: "init", L: L, beta: 1/2.5 });
 
-speedSlider.addEventListener("input", () => {
-  const steps = parseInt(speedSlider.value);
-  speedVal.textContent = steps;
-  worker.postMessage({ type: "setSpeed", steps: steps });
-});
+// FPS tracking
 let lastFrameTime = performance.now();
-
-let fpsVal = document.getElementById("fpsVal");
+const fpsVal = document.getElementById("fpsVal");
 
 function updateFPS() {
   const now = performance.now();
@@ -61,29 +61,7 @@ function updateFPS() {
   lastFrameTime = now;
 }
 
-// Create Web Worker
-const worker = new Worker("worker.js");
-
-// Send initial parameters
-worker.postMessage({ type: "init", L: L, beta: 1/2.5 });
-
-// Handle updates from worker
-worker.onmessage = (e) => {
-  if (e.data.type === "frame") {
-    drawLattice(e.data.lattice);
-    const M = e.data.mag;
-    document.getElementById("magVal").textContent = M.toFixed(2);
-
-    // update history
-    magHistory.push(M);
-    if (magHistory.length > maxPoints) magHistory.shift(); // keep latest points
-    drawGraph();
-
-    updateFPS();
-  }
-};
-
-// Draw lattice on canvas
+// Draw lattice setup
 const img = ctx.createImageData(L, L);
 const tempCanvas = document.createElement("canvas");
 tempCanvas.width = L;
@@ -102,19 +80,16 @@ function drawLattice(lattice) {
       img.data[idx+3] = 255;
     }
   }
-
   tempCtx.putImageData(img, 0, 0);
-
   ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(tempCanvas, 0, 0, L*scale, L*scale);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(tempCanvas, 0,0,L*scale,L*scale);
 }
 
 function drawGraph() {
-  gCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+  gCtx.clearRect(0,0,graphCanvas.width,graphCanvas.height);
   gCtx.beginPath();
   gCtx.moveTo(0, graphCanvas.height/2 - magHistory[0]*(graphCanvas.height/2));
-
   for (let i = 1; i < magHistory.length; i++) {
     const x = i;
     const y = graphCanvas.height/2 - magHistory[i]*(graphCanvas.height/2);
@@ -125,15 +100,44 @@ function drawGraph() {
   gCtx.stroke();
 }
 
-// Temperature slider
+// Handle worker messages
+worker.onmessage = (e) => {
+  if(e.data.type === "frame") {
+    drawLattice(e.data.lattice);
+    const M = e.data.mag;
+    document.getElementById("magVal").textContent = M.toFixed(2);
+
+    magHistory.push(M);
+    if (magHistory.length > maxPoints) magHistory.shift();
+    drawGraph();
+
+    updateFPS();
+  }
+};
+
+// Controls
 const tempSlider = document.getElementById("temp");
 const tempVal = document.getElementById("tempVal");
-
 tempSlider.addEventListener("input", () => {
   const T = parseFloat(tempSlider.value);
   tempVal.textContent = T;
   const beta = 1 / T;
   worker.postMessage({ type: "setBeta", beta: beta });
+});
+
+const speedSlider = document.getElementById("speed");
+const speedVal = document.getElementById("speedVal");
+speedSlider.addEventListener("input", () => {
+  const steps = parseInt(speedSlider.value);
+  speedVal.textContent = steps;
+  worker.postMessage({ type: "setSpeed", steps: steps });
+});
+
+const boundaryRadios = document.querySelectorAll('input[name="boundary"]');
+boundaryRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    worker.postMessage({ type: "setBoundary", boundary: radio.value });
+  });
 });
 </script>
 
