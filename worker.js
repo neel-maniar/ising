@@ -1,6 +1,7 @@
 let L;
 let beta;
 let lattice;
+let stepsPerFrame = 1; // default
 
 onmessage = function(e) {
   const data = e.data;
@@ -14,6 +15,8 @@ onmessage = function(e) {
     runSimulation();
   } else if (data.type === "setBeta") {
     beta = data.beta;
+  } else if (data.type === "setSpeed") {
+    stepsPerFrame = data.steps;
   }
 };
 
@@ -39,7 +42,10 @@ function metropolisStep() {
 // Simulation loop
 function runSimulation() {
   setInterval(() => {
-    metropolisStep();
+    // perform multiple Metropolis steps per frame
+    for (let i = 0; i < stepsPerFrame; i++) {
+      metropolisStep();
+    }
 
     // compute magnetization
     let sum = 0;
@@ -47,5 +53,5 @@ function runSimulation() {
     const M = sum / lattice.length;
 
     postMessage({ type: "frame", lattice: lattice, mag: M });
-  }, 30);
+  }, 30); // keep constant frame interval
 }

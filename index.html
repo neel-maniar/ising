@@ -16,13 +16,17 @@
 <div id="controls">
   <label>Temperature: <span id="tempVal" style="display:inline-block; width:20px; text-align:right;">2.5</span></label>
   <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
+  
   <label style="margin-left:20px;">Magnetization: 
-    <span id="magVal" style="display:inline-block; width:50px; text-align:right; font-family: monospace;">0</span>
+    <span id="magVal" style="display:inline-block; width:50px; text-align:right;">0</span>
   </label>
+  
+  <label style="margin-left:20px;">Speed: <span id="speedVal" style="display:inline-block; width:30px; text-align:right;">1</span> steps/frame</label>
+  <input type="range" id="speed" min="1" max="20" step="1" value="1">
 </div>
 
 <script>
-const L = 150; // lattice size
+const L = 300; // lattice size
 const canvas = document.getElementById("canvas");
 canvas.width = L;
 canvas.height = L;
@@ -32,6 +36,15 @@ const graphCanvas = document.getElementById("graphCanvas");
 const gCtx = graphCanvas.getContext("2d");
 const maxPoints = graphCanvas.width; // 1 pixel per frame
 let magHistory = []; // array of past magnetization values
+
+const speedSlider = document.getElementById("speed");
+const speedVal = document.getElementById("speedVal");
+
+speedSlider.addEventListener("input", () => {
+  const steps = parseInt(speedSlider.value);
+  speedVal.textContent = steps;
+  worker.postMessage({ type: "setSpeed", steps: steps });
+});
 
 // Create Web Worker
 const worker = new Worker("worker.js");
