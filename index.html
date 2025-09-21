@@ -71,8 +71,8 @@
           \( P = \min(1, e^{-\beta \Delta E}) \)
         </span>
       </li>
-      <li>I use a checkerboard (red-black) update scheme for efficiency.</li>
-      <li>Steps per frame and boundary conditions are adjustable, allowing faster simulation and different lattice edges.</li>
+      <!-- <li>I use a checkerboard (red-black) update scheme for efficiency.</li> -->
+      <!-- <li>Steps per frame and boundary conditions are adjustable, allowing faster simulation and different lattice edges.</li> -->
     </ul>
     <p>
       The lattice magnetisation is computed as:
@@ -112,7 +112,7 @@
   </label>
 
   <label style="margin-left:20px;">Speed: <span id="speedVal" style="display:inline-block; width:30px; text-align:right;">1</span> steps/frame</label>
-  <input type="range" id="speed" min="1" max="20" step="1" value="1">
+  <input type="range" id="speed" min="1" max="30" step="1" value="1">
 
   <label style="margin-left:20px;">Boundary:</label>
   <label><input type="radio" name="boundary" value="periodic" checked> Periodic</label>
