@@ -23,11 +23,14 @@
   
   <label style="margin-left:20px;">Speed: <span id="speedVal" style="display:inline-block; width:30px; text-align:right;">1</span> steps/frame</label>
   <input type="range" id="speed" min="1" max="20" step="1" value="1">
+
+  <label style="margin-left:20px;">FPS: <span id="fpsVal" style="display:inline-block; width:40px; text-align:right;">0</span></label>
+
 </div>
 
 <script>
 const L = 300; // lattice size
-const scale = 2; // each lattice site is 2x2 pixels
+const scale = 1; // each lattice site is 2x2 pixels
 const canvas = document.getElementById("canvas");
 canvas.width = L * scale;
 canvas.height = L * scale;
@@ -46,6 +49,17 @@ speedSlider.addEventListener("input", () => {
   speedVal.textContent = steps;
   worker.postMessage({ type: "setSpeed", steps: steps });
 });
+let lastFrameTime = performance.now();
+
+let fpsVal = document.getElementById("fpsVal");
+
+function updateFPS() {
+  const now = performance.now();
+  const delta = now - lastFrameTime;
+  const fps = 1000 / delta;
+  fpsVal.textContent = fps.toFixed(1);
+  lastFrameTime = now;
+}
 
 // Create Web Worker
 const worker = new Worker("worker.js");
@@ -65,12 +79,18 @@ worker.onmessage = (e) => {
     if (magHistory.length > maxPoints) magHistory.shift(); // keep latest points
     drawGraph();
 
+    updateFPS();
   }
 };
 
 // Draw lattice on canvas
+const img = ctx.createImageData(L, L);
+const tempCanvas = document.createElement("canvas");
+tempCanvas.width = L;
+tempCanvas.height = L;
+const tempCtx = tempCanvas.getContext("2d");
+
 function drawLattice(lattice) {
-  const img = ctx.createImageData(L, L);
   for (let i = 0; i < L; i++) {
     for (let j = 0; j < L; j++) {
       const idx = (i*L + j)*4;
@@ -82,11 +102,8 @@ function drawLattice(lattice) {
       img.data[idx+3] = 255;
     }
   }
-  // scale image when drawing
-  const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = L;
-  tempCanvas.height = L;
-  tempCanvas.getContext("2d").putImageData(img, 0, 0);
+
+  tempCtx.putImageData(img, 0, 0);
 
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, canvas.width, canvas.height);

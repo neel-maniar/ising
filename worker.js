@@ -2,6 +2,7 @@ let L;
 let beta;
 let lattice;
 let stepsPerFrame = 1; // default
+let latticeReady = false;
 
 onmessage = function(e) {
   const data = e.data;
@@ -41,17 +42,24 @@ function metropolisStep() {
 
 // Simulation loop
 function runSimulation() {
-  setInterval(() => {
-    // perform multiple Metropolis steps per frame
+  function loop() {
     for (let i = 0; i < stepsPerFrame; i++) {
       metropolisStep();
     }
-
-    // compute magnetization
-    let sum = 0;
-    for (let i = 0; i < lattice.length; i++) sum += lattice[i];
-    const M = sum / lattice.length;
-
-    postMessage({ type: "frame", lattice: lattice, mag: M });
-  }, 30); // keep constant frame interval
+    latticeReady = true; // mark lattice updated
+    setTimeout(loop, 0); // run as fast as possible
+  }
+  loop();
 }
+
+// Separate frame sender
+setInterval(() => {
+  if (!latticeReady) return;
+  latticeReady = false;
+
+  let sum = 0;
+  for (let i = 0; i < lattice.length; i++) sum += lattice[i];
+  const M = sum / lattice.length;
+
+  postMessage({ type: "frame", lattice: lattice, mag: M });
+}, 30); // redraw every 30ms (~33fps)
