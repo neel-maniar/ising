@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ising Model with Web Worker</title>
+  <style>
+    canvas { image-rendering: pixelated; border: 1px solid black; }
+    #controls { margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="controls">
+  <label>Temperature: <span id="tempVal" style="display:inline-block; width:20px; text-align:right;">2.5</span></label>
+  <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
+</div>
+
+<script>
+const L = 150; // lattice size
+const canvas = document.getElementById("canvas");
+canvas.width = L;
+canvas.height = L;
+const ctx = canvas.getContext("2d");
+
+// Create Web Worker
+const worker = new Worker("worker.js");
+
+// Send initial parameters
+worker.postMessage({ type: "init", L: L, beta: 1/2.5 });
+
+// Handle updates from worker
+worker.onmessage = (e) => {
+  if (e.data.type === "frame") {
+    drawLattice(e.data.lattice);
+  }
+};
+
+// Draw lattice on canvas
+function drawLattice(lattice) {
+  const img = ctx.createImageData(L, L);
+  for (let i = 0; i < L; i++) {
+    for (let j = 0; j < L; j++) {
+      const idx = (i*L + j)*4;
+      const spin = lattice[i*L + j];  // flattened index
+      const color = spin > 0 ? 255 : 0;
+      img.data[idx] = color;
+      img.data[idx+1] = color;
+      img.data[idx+2] = color;
+      img.data[idx+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// Temperature slider
+const tempSlider = document.getElementById("temp");
+const tempVal = document.getElementById("tempVal");
+
+tempSlider.addEventListener("input", () => {
+  const T = parseFloat(tempSlider.value);
+  tempVal.textContent = T;
+  const beta = 1 / T;
+  worker.postMessage({ type: "setBeta", beta: beta });
+});
+</script>
+
+</body>
+</html>
