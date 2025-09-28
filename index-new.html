@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ising Model Simulator</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Ising Model Simulator</h1>
+
+    <!-- Model Description Accordion -->
+    <div>
+      <button id="accordionBtn" class="accordion-btn">
+        What is this model? &#9660;
+      </button>
+      <div id="accordionContent" class="accordion-content">
+        <p><strong>tl;dr:</strong> Turns out that magnets lose their magnetism when heated up above a certain temperature, and this happens very suddenly. This is an example of a critical point, or a state change. Let's model it.</p>
+        <ol>
+          <li>Magnets are made of small magnets. Say these small magnets can only align up or down, and call this property "spin: {-1,1}"</li>
+          <li>The small magnets like to be the same orientation as their neighbours - it lowers the energy of the system. When everything aligns, we get magnetism.</li>
+          <li>Higher temperatures lend themselves to more random "higher entropy" states</li>
+          <li>So there is this battle between the energy, that wants <strong>order</strong>, and entropy, that wants <strong>chaos</strong>. And temperature is a parameter that controls this balance</li>
+          <li>Below a certain critical <em>"Curie"</em> temperature, we get total order - <strong>magnetism</strong>. Above this temperature, we get total chaos - <strong>demagnetisation</strong></li>
+          <li>Exactly at this temperature, we get very weird phenomena!</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Mathematical Description -->
+    <div class="math-description">
+      <p>
+        Mathematically, the Ising model defines the energy of a lattice of spins \(s_i \in \{-1,1\}\) as:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i \)
+      </p>
+      <p>
+        where:
+        <ul>
+          <li>\(J\) is the interaction strength between neighboring spins</li>
+          <li>\(\langle i,j \rangle\) indicates the sum over nearest neighbor pairs</li>
+          <li>\(h\) is an external magnetic field (here, \(h=0\))</li>
+        </ul>
+      </p>
+      <p>
+        The simulation evolves the lattice to minimize the energy while balancing thermal fluctuations, controlled by the temperature \(T\) (or \(\beta = 1/k_B T\)).
+      </p>
+    </div>
+
+    <!-- Simulation Details Accordion -->
+    <div>
+      <button id="accordionNumBtn" class="accordion-btn">
+        Simulation Details &#9660;
+      </button>
+      <div id="accordionNumContent" class="accordion-content">
+        <p>
+          The simulation numerically implements the Metropolis-Hastings algorithm for the Ising model:
+        </p>
+        <ul>
+          <li>Each spin \(s_i \in \{-1,1\}\) is updated randomly.</li>
+          <li>The energy change for flipping a spin is:
+            <span style="display:block; text-align:center;">
+              \( \Delta E = 2 s_i \sum_{j \in \text{neighbors}(i)} s_j \)
+            </span>
+          </li>
+          <li>The spin flip is accepted with probability:
+            <span style="display:block; text-align:center;">
+              \( P = \min(1, e^{-\beta \Delta E}) \)
+            </span>
+          </li>
+        </ul>
+        <p>
+          The lattice magnetisation is computed as:
+          <span style="display:block; text-align:center;">
+            \( M = \frac{1}{N} \sum_i s_i \)
+          </span>
+          and displayed as a graph alongside the lattice.
+        </p>
+      </div>
+    </div>
+
+    <!-- Usage Instructions -->
+    <div class="math-description">
+      <p>
+        <strong>Controls and Observations:</strong>  
+        Use the sliders and radio buttons to interact with the simulation:
+      </p>
+      <ul>
+        <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks. At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
+        <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
+        <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
+      </ul>
+      <p>
+        The live magnetisation graph below shows the average spin of the whole lattice. Close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised.
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Temperature:</label>
+        <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
+        <span class="control-value" id="tempVal">2.5</span>
+      </div>
+
+      <div class="control-group">
+        <label>Field h:</label>
+        <input type="range" id="field" min="-0.50" max="0.50" step="0.01" value="0">
+        <span class="control-value" id="fieldVal">0.00</span>
+      </div>
+
+      <div class="control-group">
+        <label>Speed:</label>
+        <input type="range" id="speed" min="1" max="30" step="1" value="1">
+        <span class="control-value" id="speedVal">1</span> steps/frame
+      </div>
+
+      <div class="control-group">
+        <label>Boundary:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="boundary" value="periodic" checked> Periodic</label>
+          <label><input type="radio" name="boundary" value="fixedUp"> Fixed +1</label>
+          <label><input type="radio" name="boundary" value="fixedDown"> Fixed -1</label>
+        </div>
+      </div>
+
+      <div class="control-group fps-display">
+        <label>FPS:</label>
+        <span class="control-value" id="fpsVal">0.0</span>
+      </div>
+    </div>
+
+    <!-- Simulation Canvas -->
+    <div class="canvas-container">
+      <h3>Simulation</h3>
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- Magnetization Graph -->
+    <div class="canvas-container">
+      <h3>Magnetisation Graph</h3>
+      <canvas id="graphCanvas" width="400" height="100"></canvas>
+      <div class="magnetization-display">
+        <label>Magnetisation:</label>
+        <span class="control-value" id="magVal">0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load JavaScript modules -->
+  <script src="js/IsingRenderer.js"></script>
+  <script src="js/UIController.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

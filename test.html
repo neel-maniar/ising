@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Module Test</title>
+</head>
+<body>
+    <h1>Testing Ising Model Modules</h1>
+    <div id="test-results"></div>
+
+    <script src="js/IsingModel.js"></script>
+    <script>
+        // Simple test to verify the IsingModel class works
+        function runTests() {
+            const results = document.getElementById('test-results');
+            const tests = [];
+
+            try {
+                // Test IsingModel initialization
+                const model = new IsingModel(10, 2.0);
+                tests.push('✓ IsingModel instantiation: PASS');
+                
+                // Test lattice initialization
+                const lattice = model.getLattice();
+                if (lattice.length === 100) {
+                    tests.push('✓ Lattice size correct: PASS');
+                } else {
+                    tests.push('✗ Lattice size incorrect: FAIL');
+                }
+
+                // Test magnetization calculation
+                const mag = model.calculateMagnetization();
+                if (mag >= -1 && mag <= 1) {
+                    tests.push('✓ Magnetization in valid range: PASS');
+                } else {
+                    tests.push('✗ Magnetization out of range: FAIL');
+                }
+
+                // Test Metropolis step
+                model.metropolisStep();
+                tests.push('✓ Metropolis step executed: PASS');
+
+                // Test parameter updates
+                model.setTemperature(1.5);
+                model.setBoundary('fixedUp');
+                model.setField(0.1);
+                tests.push('✓ Parameter updates: PASS');
+
+            } catch (error) {
+                tests.push('✗ Error during testing: ' + error.message);
+            }
+
+            results.innerHTML = '<ul><li>' + tests.join('</li><li>') + '</li></ul>';
+        }
+
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

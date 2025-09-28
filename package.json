@@ -1,0 +1,32 @@
+{
+  "name": "ising-model-simulator",
+  "version": "2.0.0",
+  "description": "Interactive Ising Model simulation with modular architecture",
+  "main": "index.html",
+  "scripts": {
+    "serve": "python3 -m http.server 8000",
+    "serve-alt": "python -m SimpleHTTPServer 8000",
+    "lint": "echo 'Linting would go here - consider ESLint for JS files'",
+    "build": "echo 'Build process - could minify/bundle files here'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neel-maniar/ising-webapp-simple.git"
+  },
+  "keywords": [
+    "ising-model",
+    "physics",
+    "simulation",
+    "statistical-mechanics",
+    "web-worker",
+    "canvas"
+  ],
+  "author": "Neel Maniar",
+  "license": "MIT",
+  "devDependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 11"
+  ]
+}
