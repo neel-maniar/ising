@@ -44,12 +44,19 @@
         \( H_{\text{XY}} = -J \sum_{\langle i,j \rangle} \cos(\theta_i - \theta_j) - h \sum_i \cos(\theta_i) \)
       </p>
       <p>
+        <strong>Potts Model:</strong> The energy of a lattice where each site can have one of \(q\) discrete states \(s_i \in \{0, 1, 2, \ldots, q-1\}\) is:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H_{\text{Potts}} = -J \sum_{\langle i,j \rangle} \delta_{s_i, s_j} - h \sum_i \delta_{s_i, 0} \)
+      </p>
+      <p>
         where:
         <ul>
           <li>\(J\) is the interaction strength between neighboring spins</li>
           <li>\(\langle i,j \rangle\) indicates the sum over nearest neighbor pairs</li>
           <li>\(h\) is an external magnetic field</li>
           <li>For the XY model, \(\theta_i\) represents the angle of spin \(i\)</li>
+          <li>For the Potts model, \(\delta_{s_i, s_j}\) is the Kronecker delta (1 if \(s_i = s_j\), 0 otherwise)</li>
         </ul>
       </p>
       <p>
@@ -93,9 +100,10 @@
           <strong>Wolff Cluster Algorithm:</strong> An alternative to single-spin Metropolis updates, the Wolff algorithm builds clusters of aligned spins and flips entire clusters together. Starting from a random spin, it probabilistically adds neighboring spins of the same orientation to a cluster using probability \( P_{add} = 1 - e^{-2\beta J} \), then flips the entire cluster. This dramatically reduces critical slowing down near phase transitions, making equilibration much faster at low temperatures where spins are highly correlated.
         </p>
         <p>
-          <strong>Wolff Algorithm Limitations:</strong> The Wolff algorithm has two important restrictions:
-          <br>• <strong>Ising Model Only:</strong> Wolff only works for discrete spin systems like the Ising model where spins can be "flipped" between two states (±1). The rotator/XY model has continuous spins \(\theta \in [0, 2\pi)\) with no natural "flip" operation, making cluster formation impossible.
+          <strong>Wolff Algorithm Limitations:</strong> The Wolff algorithm has three important restrictions:
+          <br>• <strong>Binary Spins Only:</strong> Wolff only works for binary spin systems like the Ising model where spins can be "flipped" between two states (±1). The rotator/XY model has continuous spins \(\theta \in [0, 2\pi)\) with no natural "flip" operation, and the Potts model with \(q > 2\) states lacks a unique "opposite" state to flip to.
           <br>• <strong>Non-zero Field Required:</strong> When \( h = 0 \), the Ising model has degenerate ground states (all spins up ≡ all spins down). Wolff clusters can cause the entire lattice to flip rapidly between these states, creating unphysical oscillations not seen in real magnets. A small field \( h \neq 0 \) breaks this degeneracy, stabilizing the magnetization.
+          <br>• <strong>Potts Model Complexity:</strong> While Wolff-like cluster algorithms exist for the \(q=2\) Potts model (equivalent to Ising), they become much more complex for \(q > 2\) states since there's no unique "opposite" state to flip to, and the probability calculations become significantly more involved.
         </p>
         <p>
           <strong>Critical Slowing Down:</strong> Near phase transitions, the system develops long-range correlations where spins become correlated over distances much larger than the lattice spacing. With single-spin Metropolis updates, it takes an exponentially long time (\(\propto L^z\) with \(z \approx 2\)) for information to propagate across these correlation lengths, causing the system to get "stuck" in metastable states. The autocorrelation time \(\tau\) diverges as:
@@ -115,6 +123,14 @@
         <br>• \(\theta = \frac{5\pi}{3}\) (spin vector \(\vec{s} = (\frac{1}{2},-\frac{\sqrt{3}}{2})\)) → <strong style="color:#ff00ff;">Magenta (300°)</strong>
         <br>The local magnetization vector \(\vec{M}_{local} = \langle\cos\theta, \sin\theta\rangle\) determines color coherence: aligned spins produce uniform colors, while disordered spins create rainbow patterns.
       </p>
+      <p>
+        <strong>Color Mapping in Potts Model:</strong> In the Potts model, each site can be in one of \(q\) discrete states \(s_i \in \{0, 1, 2, \ldots, q-1\}\). Colors are assigned using equally spaced hues in HSL color space:
+        <br>• State 0 → <strong style="color:#cc5500;">Red-Orange (0°)</strong>
+        <br>• State 1 → <strong style="color:#cccc00;">Yellow (120°/q)</strong> 
+        <br>• State 2 → <strong style="color:#00cc00;">Green (240°/q)</strong>
+        <br>• Higher states continue around the color wheel with hue = \(\frac{360° \times \text{state}}{q}\)
+        <br>Aligned domains appear as uniform color regions, while disordered phases show random color mixing. The order parameter measures how much state 0 dominates over the expected random distribution.
+      </p>
       </div>
 
     </div>
@@ -126,13 +142,13 @@
         Use the sliders and radio buttons to interact with the simulation:
       </p>
       <ul>
-        <li><strong>Model Type:</strong> Choose between Ising (binary spins ±1) or Rotator/XY (continuous angles). The Ising model shows black/white blocks, while the Rotator model displays a colorful pattern where colors represent spin directions.</li>
+        <li><strong>Model Type:</strong> Choose between Ising (binary spins ±1), Rotator/XY (continuous angles), or Potts (discrete states). The Ising model shows black/white blocks, the Rotator model displays a colorful pattern where colors represent spin directions, and the Potts model shows distinct colors for each discrete state.</li>
         <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks (Ising) or coherent color patterns (Rotator). At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
         <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
         <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
       </ul>
       <p>
-        The live magnetisation graph below shows the average spin of the whole lattice. For the Ising model, close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised. For the Rotator model, the magnetisation represents the magnitude of the average spin vector, ranging from 0 (completely disordered) to 1 (perfectly aligned).
+        The live magnetisation graph below shows the average spin of the whole lattice. For the Ising model, close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised. For the Rotator model, the magnetisation represents the magnitude of the average spin vector, ranging from 0 (completely disordered) to 1 (perfectly aligned). For the Potts model, the magnetisation shows the order parameter based on the concentration of state 0, ranging from -1 (state 0 completely absent) to +1 (all sites in state 0).
       </p>
     </div>
 
@@ -161,7 +177,14 @@
         <div class="radio-group">
           <label><input type="radio" name="model" value="ising" checked> Ising</label>
           <label><input type="radio" name="model" value="rotator"> Rotator (XY)</label>
+          <label><input type="radio" name="model" value="potts"> Potts</label>
         </div>
+      </div>
+
+      <div class="control-group" id="pottsControlGroup" style="display: none;">
+        <label>States q:</label>
+        <input type="range" id="pottsStates" min="2" max="8" step="1" value="3">
+        <span class="control-value" id="pottsStatesVal">3</span>
       </div>
 
       <div class="control-group">
@@ -178,6 +201,10 @@
 
       <div class="control-group" id="wolffNotification2" style="display: none; color: #e67e22; font-size: 0.9em; font-style: italic;">
         ⚠️ Wolff algorithm does not work for Rotator model. See Simulation Details for explanation.
+      </div>
+
+      <div class="control-group" id="wolffNotification3" style="display: none; color: #e67e22; font-size: 0.9em; font-style: italic;">
+        ⚠️ Wolff algorithm does not work for Potts model. See Simulation Details for explanation.
       </div>
 
       <div class="control-group">

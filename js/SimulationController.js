@@ -89,6 +89,7 @@ class SimulationController {
           magnetization: this.model.calculateMagnetization(),
           magnetizationComponents: this.model.getMagnetizationComponents(),
           modelType: this.model.getModelType(),
+          pottsStates: this.model.getPottsStates ? this.model.getPottsStates() : 3,
           timestamp: now
         };
         this.frameCallback(frameData);
@@ -146,6 +147,13 @@ class SimulationController {
   setAlgorithm(algorithm) {
     if (this.model) {
       this.model.setAlgorithm(algorithm);
+    }
+    return this;
+  }
+
+  setPottsStates(states) {
+    if (this.model) {
+      this.model.setPottsStates(states);
     }
     return this;
   }

@@ -1,277 +1,257 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Ising Model</title>
-  <style>
-    canvas { image-rendering: pixelated; border: 1px solid black; }
-    #controls { margin-top: 10px; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ising Model Simulator</title>
+  <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 </head>
 <body>
+  <div class="container">
+    <h1>Ising Model Simulator</h1>
 
-<h1 style="text-align:center; margin-top:20px; font-family: Arial, sans-serif;">
-  Ising Model Simulator
-</h1>
+    <!-- Model Description Accordion -->
+    <div>
+      <button id="accordionBtn" class="accordion-btn">
+        What is this model? &#9660;
+      </button>
+      <div id="accordionContent" class="accordion-content">
+        <p><strong>tl;dr:</strong> Turns out that magnets lose their magnetism when heated up above a certain temperature, and this happens very suddenly. This is an example of a critical point, or a state change. Let's model it.</p>
+        <ol>
+          <li>Magnets are made of small magnets. Say these small magnets can only align up or down, and call this property "spin: {-1,1}"</li>
+          <li>The small magnets like to be the same orientation as their neighbours - it lowers the energy of the system. When everything aligns, we get magnetism.</li>
+          <li>Higher temperatures lend themselves to more random "higher entropy" states</li>
+          <li>So there is this battle between the energy, that wants <strong>order</strong>, and entropy, that wants <strong>chaos</strong>. And temperature is a parameter that controls this balance</li>
+          <li>Below a certain critical <em>"Curie"</em> temperature, we get total order - <strong>magnetism</strong>. Above this temperature, we get total chaos - <strong>demagnetisation</strong></li>
+          <li>Exactly at this temperature, we get very weird phenomena!</li>
+        </ol>
+      </div>
+    </div>
 
-<div style="margin-bottom:10px;">
-  <button id="accordionBtn" style="font-weight:bold; cursor:pointer;">
-    What is this model? &#9660; <!-- ▼ -->
-  </button>
-  <div id="accordionContent" style="display:none; padding:10px; border:1px solid #ccc; margin-top:5px;">
-    <p><strong>tl;dr:</strong> Turns out that magnets lose their magnetism when heated up above a certain temperature, and this happens very suddenly. This is an example of a critical point, or a state change. Let's model it.</p>
-    <ol>
-      <li>Magnets are made of small magnets. Say these small magnets can only align up or down, and call this property "spin: {-1,1}"</li>
-      <li>The small magnets like to be the same orientation as their neighbours - it lowers the energy of the system. When everything aligns, we get magnetism.</li>
-      <li>Higher temperatures lend themselves to more random "higher entropy" states</li>
-      <li>So there is this battle between the energy, that wants <strong>order</strong>, and entropy, that wants <strong>chaos</strong>. And temperature is a parameter that controls this balance</li>
-      <li>Below a certain critical <em>"Curie"</em> temperature, we get total order - <strong>magnetism</strong>. Above this temperature, we get total chaos - <strong>demagnetisation</strong></li>
-      <li>Exactly at this temperature, we get very weird phenomena!</li>
-    </ol>
+    <!-- Mathematical Description -->
+    <div class="math-description">
+      <p>
+        <strong>Ising Model:</strong> The energy of a lattice of binary spins \(s_i \in \{-1,1\}\) is:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H_{\text{Ising}} = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i \)
+      </p>
+      <p>
+        <strong>Rotator (XY) Model:</strong> The energy of a lattice of continuous spins \(\theta_i \in [0, 2\pi)\) is:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H_{\text{XY}} = -J \sum_{\langle i,j \rangle} \cos(\theta_i - \theta_j) - h \sum_i \cos(\theta_i) \)
+      </p>
+      <p>
+        <strong>Potts Model:</strong> The energy of a lattice where each site can have one of \(q\) discrete states \(s_i \in \{0, 1, 2, \ldots, q-1\}\) is:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H_{\text{Potts}} = -J \sum_{\langle i,j \rangle} \delta_{s_i, s_j} - h \sum_i \delta_{s_i, 0} \)
+      </p>
+      <p>
+        where:
+        <ul>
+          <li>\(J\) is the interaction strength between neighboring spins</li>
+          <li>\(\langle i,j \rangle\) indicates the sum over nearest neighbor pairs</li>
+          <li>\(h\) is an external magnetic field</li>
+          <li>For the XY model, \(\theta_i\) represents the angle of spin \(i\)</li>
+          <li>For the Potts model, \(\delta_{s_i, s_j}\) is the Kronecker delta (1 if \(s_i = s_j\), 0 otherwise)</li>
+        </ul>
+      </p>
+      <p>
+        Both simulations use the Metropolis-Hastings algorithm to evolve the lattice, balancing energy minimization with thermal fluctuations controlled by temperature \(T\) (or \(\beta = 1/k_B T\)).
+      </p>
+    </div>
+
+    <!-- Simulation Details Accordion -->
+    <div>
+      <button id="accordionNumBtn" class="accordion-btn">
+        Simulation Details &#9660;
+      </button>
+      <div id="accordionNumContent" class="accordion-content">
+        <p>
+          The simulation numerically implements the Metropolis-Hastings algorithm for the Ising model:
+        </p>
+        <ul>
+          <li>Each spin \(s_i \in \{-1,1\}\) is updated randomly.</li>
+          <li>The energy change for flipping a spin is:
+            <span style="display:block; text-align:center;">
+              \( \Delta E = 2 s_i \sum_{j \in \text{neighbors}(i)} s_j \)
+            </span>
+          </li>
+          <li>The spin flip is accepted with probability:
+            <span style="display:block; text-align:center;">
+              \( P = \min(1, e^{-\beta \Delta E}) \)
+            </span>
+          </li>
+        </ul>
+        <p>
+          The lattice magnetisation is computed as:
+          <span style="display:block; text-align:center;">
+            \( M = \frac{1}{N} \sum_i s_i \)
+          </span>
+          and displayed as a graph alongside the lattice.
+        </p>
+        <p>
+          <strong>Uncertainty Bounds:</strong> The magnetization graph displays uncertainty bounds (shown as a light red shaded area) that represent the statistical fluctuations in magnetization over a rolling window of recent measurements. These bounds are calculated as \( M_{mean} \pm \sigma_M \), where \( \sigma_M \) is the standard deviation of magnetization within the window. The bounds help visualize the natural thermal fluctuations and become wider near phase transitions where the system exhibits larger statistical variations.
+        </p>
+        <p>
+          <strong>Wolff Cluster Algorithm:</strong> An alternative to single-spin Metropolis updates, the Wolff algorithm builds clusters of aligned spins and flips entire clusters together. Starting from a random spin, it probabilistically adds neighboring spins of the same orientation to a cluster using probability \( P_{add} = 1 - e^{-2\beta J} \), then flips the entire cluster. This dramatically reduces critical slowing down near phase transitions, making equilibration much faster at low temperatures where spins are highly correlated.
+        </p>
+        <p>
+          <strong>Wolff Algorithm Limitations:</strong> The Wolff algorithm has three important restrictions:
+          <br>• <strong>Binary Spins Only:</strong> Wolff only works for binary spin systems like the Ising model where spins can be "flipped" between two states (±1). The rotator/XY model has continuous spins \(\theta \in [0, 2\pi)\) with no natural "flip" operation, and the Potts model with \(q > 2\) states lacks a unique "opposite" state to flip to.
+          <br>• <strong>Non-zero Field Required:</strong> When \( h = 0 \), the Ising model has degenerate ground states (all spins up ≡ all spins down). Wolff clusters can cause the entire lattice to flip rapidly between these states, creating unphysical oscillations not seen in real magnets. A small field \( h \neq 0 \) breaks this degeneracy, stabilizing the magnetization.
+          <br>• <strong>Potts Model Complexity:</strong> While Wolff-like cluster algorithms exist for the \(q=2\) Potts model (equivalent to Ising), they become much more complex for \(q > 2\) states since there's no unique "opposite" state to flip to, and the probability calculations become significantly more involved.
+        </p>
+        <p>
+          <strong>Critical Slowing Down:</strong> Near phase transitions, the system develops long-range correlations where spins become correlated over distances much larger than the lattice spacing. With single-spin Metropolis updates, it takes an exponentially long time (\(\propto L^z\) with \(z \approx 2\)) for information to propagate across these correlation lengths, causing the system to get "stuck" in metastable states. The autocorrelation time \(\tau\) diverges as:
+          <span style="display:block; text-align:center; margin: 10px 0;">
+            \( \tau \propto \xi^z \propto |T - T_c|^{-\nu z} \)
+          </span>
+          where \(\xi\) is the correlation length and \(\nu \approx 1\) is the critical exponent. Wolff's cluster updates solve this by flipping correlated regions together, reducing the dynamic critical exponent from \(z \approx 2\) to \(z \approx 0\), making equilibration time nearly independent of system size.
+        </p>
+
+      <p>
+        <strong>Color Mapping in Rotator Model:</strong> In the XY/rotator model, each spin is represented by an angle \(\theta_i \in [0, 2\pi)\) radians. The color mapping transforms this angle to HSL hue space using \(\text{hue} = \frac{\theta_i}{2\pi} \times 360°\), with saturation=100% and lightness=50%. Specifically:
+        <br>• \(\theta = 0\) (spin vector \(\vec{s} = (1,0)\)) → <strong style="color:#ff0000;">Red (0°)</strong>
+        <br>• \(\theta = \frac{\pi}{3}\) (spin vector \(\vec{s} = (\frac{1}{2},\frac{\sqrt{3}}{2})\)) → <strong style="color:#ffff00;">Yellow (60°)</strong>
+        <br>• \(\theta = \frac{2\pi}{3}\) (spin vector \(\vec{s} = (-\frac{1}{2},\frac{\sqrt{3}}{2})\)) → <strong style="color:#00ff00;">Green (120°)</strong>
+        <br>• \(\theta = \pi\) (spin vector \(\vec{s} = (-1,0)\)) → <strong style="color:#00ffff;">Cyan (180°)</strong>
+        <br>• \(\theta = \frac{4\pi}{3}\) (spin vector \(\vec{s} = (-\frac{1}{2},-\frac{\sqrt{3}}{2})\)) → <strong style="color:#0000ff;">Blue (240°)</strong>
+        <br>• \(\theta = \frac{5\pi}{3}\) (spin vector \(\vec{s} = (\frac{1}{2},-\frac{\sqrt{3}}{2})\)) → <strong style="color:#ff00ff;">Magenta (300°)</strong>
+        <br>The local magnetization vector \(\vec{M}_{local} = \langle\cos\theta, \sin\theta\rangle\) determines color coherence: aligned spins produce uniform colors, while disordered spins create rainbow patterns.
+      </p>
+      <p>
+        <strong>Color Mapping in Potts Model:</strong> In the Potts model, each site can be in one of \(q\) discrete states \(s_i \in \{0, 1, 2, \ldots, q-1\}\). Colors are assigned using equally spaced hues in HSL color space:
+        <br>• State 0 → <strong style="color:#cc5500;">Red-Orange (0°)</strong>
+        <br>• State 1 → <strong style="color:#cccc00;">Yellow (120°/q)</strong> 
+        <br>• State 2 → <strong style="color:#00cc00;">Green (240°/q)</strong>
+        <br>• Higher states continue around the color wheel with hue = \(\frac{360° \times \text{state}}{q}\)
+        <br>Aligned domains appear as uniform color regions, while disordered phases show random color mixing. The order parameter measures how much state 0 dominates over the expected random distribution.
+      </p>
+      </div>
+
+    </div>
+
+    <!-- Usage Instructions -->
+    <div class="math-description">
+      <p>
+        <strong>Controls and Observations:</strong>  
+        Use the sliders and radio buttons to interact with the simulation:
+      </p>
+      <ul>
+        <li><strong>Model Type:</strong> Choose between Ising (binary spins ±1), Rotator/XY (continuous angles), or Potts (discrete states). The Ising model shows black/white blocks, the Rotator model displays a colorful pattern where colors represent spin directions, and the Potts model shows distinct colors for each discrete state.</li>
+        <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks (Ising) or coherent color patterns (Rotator). At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
+        <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
+        <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
+      </ul>
+      <p>
+        The live magnetisation graph below shows the average spin of the whole lattice. For the Ising model, close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised. For the Rotator model, the magnetisation represents the magnitude of the average spin vector, ranging from 0 (completely disordered) to 1 (perfectly aligned). For the Potts model, the magnetisation shows the order parameter based on the concentration of state 0, ranging from -1 (state 0 completely absent) to +1 (all sites in state 0).
+      </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Temperature:</label>
+        <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
+        <span class="control-value" id="tempVal">2.5</span>
+      </div>
+
+      <div class="control-group">
+        <label>Field h:</label>
+        <input type="range" id="field" min="-0.50" max="0.50" step="0.01" value="0">
+        <span class="control-value" id="fieldVal">0.00</span>
+      </div>
+
+      <div class="control-group">
+        <label>Speed:</label>
+        <input type="range" id="speed" min="1" max="30" step="1" value="1">
+        <span class="control-value" id="speedVal">1</span> steps/frame
+      </div>
+
+      <div class="control-group">
+        <label>Model:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="model" value="ising" checked> Ising</label>
+          <label><input type="radio" name="model" value="rotator"> Rotator (XY)</label>
+          <label><input type="radio" name="model" value="potts"> Potts</label>
+        </div>
+      </div>
+
+      <div class="control-group" id="pottsControlGroup" style="display: none;">
+        <label>States q:</label>
+        <input type="range" id="pottsStates" min="2" max="8" step="1" value="3">
+        <span class="control-value" id="pottsStatesVal">3</span>
+      </div>
+
+      <div class="control-group">
+        <label>Algorithm:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="algorithm" value="metropolis" checked> Metropolis</label>
+          <label><input type="radio" name="algorithm" value="wolff"> Wolff Cluster</label>
+        </div>
+      </div>
+
+      <div class="control-group" id="wolffNotification" style="display: none; color: #e67e22; font-size: 0.9em; font-style: italic;">
+        ⚠️ Wolff algorithm disabled for h = 0. See Simulation Details for explanation.
+      </div>
+
+      <div class="control-group" id="wolffNotification2" style="display: none; color: #e67e22; font-size: 0.9em; font-style: italic;">
+        ⚠️ Wolff algorithm does not work for Rotator model. See Simulation Details for explanation.
+      </div>
+
+      <div class="control-group" id="wolffNotification3" style="display: none; color: #e67e22; font-size: 0.9em; font-style: italic;">
+        ⚠️ Wolff algorithm does not work for Potts model. See Simulation Details for explanation.
+      </div>
+
+      <div class="control-group">
+        <label>Boundary:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="boundary" value="periodic" checked> Periodic</label>
+          <label><input type="radio" name="boundary" value="fixedUp"> Fixed +1</label>
+          <label><input type="radio" name="boundary" value="fixedDown"> Fixed -1</label>
+        </div>
+      </div>
+
+      <div class="control-group fps-display">
+        <label>FPS:</label>
+        <span class="control-value" id="fpsVal">0.0</span>
+      </div>
+    </div>
+
+    <!-- Simulation Canvas -->
+    <div class="canvas-container">
+      <h3>Simulation</h3>
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- Magnetization Graph -->
+    <div class="canvas-container">
+      <h3>Magnetisation Graph</h3>
+      <canvas id="graphCanvas" width="400" height="100"></canvas>
+      <div class="magnetization-display">
+        <label>Current M:</label>
+        <span class="control-value" id="magVal">0.000</span>
+        <label style="margin-left: 15px;">Rolling M̄:</label>
+        <span class="control-value" id="rollingMeanVal">0.000</span>
+        <label style="margin-left: 15px;">σ:</label>
+        <span class="control-value" id="rollingStdVal">0.000</span>
+      </div>
+      <div class="magnetization-display" id="rotatorMagDisplay" style="display: none;">
+        <label>M<sub>x</sub>:</label>
+        <span class="control-value" id="magXVal">0.000</span>
+        <label style="margin-left: 15px;">M<sub>y</sub>:</label>
+        <span class="control-value" id="magYVal">0.000</span>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="mathDescription" style="margin-top:10px;">
-  <p>
-    Mathematically, the Ising model defines the energy of a lattice of spins \(s_i \in \{-1,1\}\) as:
-  </p>
-  <p style="text-align:center; font-size:1.1em;">
-    \( H = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i \)
-  </p>
-  <p>
-    where:
-    <ul>
-      <li>\(J\) is the interaction strength between neighboring spins</li>
-      <li>\(\langle i,j \rangle\) indicates the sum over nearest neighbor pairs</li>
-      <li>\(h\) is an external magnetic field (here, \(h=0\))</li>
-    </ul>
-  </p>
-  <p>
-    The simulation evolves the lattice to minimize the energy while balancing thermal fluctuations, controlled by the temperature \(T\) (or \(\beta = 1/k_B T\)).
-  </p>
-</div>
-
-<div style="margin-top:10px;">
-  <button id="accordionNumBtn" style="font-weight:bold; cursor:pointer;">
-    Simulation Details &#9660; <!-- ▼ -->
-  </button>
-  <div id="accordionNumContent" style="display:none; padding:10px; border:1px solid #ccc; margin-top:5px;">
-    <p>
-      The simulation numerically implements the Metropolis-Hastings algorithm for the Ising model:
-    </p>
-    <ul>
-      <li>Each spin \(s_i \in \{-1,1\}\) is updated randomly.</li>
-      <li>The energy change for flipping a spin is:
-        <span style="display:block; text-align:center;">
-          \( \Delta E = 2 s_i \sum_{j \in \text{neighbors}(i)} s_j \)
-        </span>
-      </li>
-      <li>The spin flip is accepted with probability:
-        <span style="display:block; text-align:center;">
-          \( P = \min(1, e^{-\beta \Delta E}) \)
-        </span>
-      </li>
-      <!-- <li>I use a checkerboard (red-black) update scheme for efficiency.</li> -->
-      <!-- <li>Steps per frame and boundary conditions are adjustable, allowing faster simulation and different lattice edges.</li> -->
-    </ul>
-    <p>
-      The lattice magnetisation is computed as:
-      <span style="display:block; text-align:center;">
-        \( M = \frac{1}{N} \sum_i s_i \)
-      </span>
-      and displayed as a graph alongside the lattice.
-    </p>
-  </div>
-</div>
-
-<div style="margin-top:10px;">
-  <p>
-    <strong>Controls and Observations:</strong>  
-    Use the sliders and radio buttons to interact with the simulation:
-  </p>
-  <ul>
-    <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks. At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
-    <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
-    <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
-  </ul>
-  <p>
-    The live magnetisation graph below shows the average spin of the whole lattice. Close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised.
-  </p>
-</div>
-
-<div id="controls">
-  <label>Temperature: <span id="tempVal">2.5</span></label>
-  <input type="range" id="temp" min="0.1" max="5" step="0.1" value="2.5">
-
-  <label style="margin-left:20px;">Field h: <span id="fieldVal">0</span></label>
-  <input type="range" id="field" min="-0.50" max="0.50" step="0.01" value="0">
-
-  <label style="margin-left:20px;">Speed: <span id="speedVal">1<span> steps/frame</label>
-  <input type="range" id="speed" min="1" max="30" step="1" value="1">
-
-  <label style="margin-left:20px;">Boundary:</label>
-  <label><input type="radio" name="boundary" value="periodic" checked> Periodic</label>
-  <label><input type="radio" name="boundary" value="fixedUp"> Fixed +1</label>
-  <label><input type="radio" name="boundary" value="fixedDown"> Fixed -1</label>
-
-  <label style="margin-left:20px;">FPS: <span id="fpsVal" style="display:inline-block; width:40px; text-align:right;">0</span></label>
-</div>
-
-<h3 style="margin-bottom: 0;">Simulation</h3>
-<canvas id="canvas"></canvas>
-<h3 style="margin-bottom: 0;">Magnetisation graph</h3>
-<canvas id="graphCanvas" width="400" height="100" style="border:1px solid black; display:block; margin-top:10px;"></canvas>
-<label>Magnetisation: 
-  <span id="magVal" style="display:inline-block; width:50px; text-align:right;">0</span>
-</label>
-
-
-<script>
-const accordionBtn = document.getElementById("accordionBtn");
-const accordionContent = document.getElementById("accordionContent");
-
-accordionBtn.addEventListener("click", () => {
-  if(accordionContent.style.display === "none") {
-    accordionContent.style.display = "block";
-    accordionBtn.textContent = "What is this model? \u25B2";
-  } else {
-    accordionContent.style.display = "none";
-    accordionBtn.textContent = "What is this model? \u25BC";
-  }
-});
-
-const accordionNumBtn = document.getElementById("accordionNumBtn");
-const accordionNumContent = document.getElementById("accordionNumContent");
-
-accordionNumBtn.addEventListener("click", () => {
-  if(accordionNumContent.style.display === "none") {
-    accordionNumContent.style.display = "block";
-    accordionNumBtn.textContent = "Simulation Details \u25B2";
-  } else {
-    accordionNumContent.style.display = "none";
-    accordionNumBtn.textContent = "Simulation Details \u25BC";
-  }
-});
-
-const fieldSlider = document.getElementById("field");
-const fieldVal = document.getElementById("fieldVal");
-fieldSlider.addEventListener("input", () => {
-  const h = parseFloat(fieldSlider.value);
-  console.log(h)
-  fieldVal.textContent = h.toFixed(2);
-  worker.postMessage({ type: "setField", h: h });
-});
-
-const L = 300;   // lattice size
-const scale = 1;  // pixels per lattice site
-
-
-// Controls
-const tempSlider = document.getElementById("temp");
-const tempVal = document.getElementById("tempVal");
-tempSlider.addEventListener("input", () => {
-  const T = parseFloat(tempSlider.value);
-  tempVal.textContent = T;
-  const beta = 1 / T;
-  worker.postMessage({ type: "setBeta", beta: beta });
-});
-
-const speedSlider = document.getElementById("speed");
-const speedVal = document.getElementById("speedVal");
-speedSlider.addEventListener("input", () => {
-  const steps = parseInt(speedSlider.value);
-  speedVal.textContent = steps;
-  worker.postMessage({ type: "setSpeed", steps: steps });
-});
-
-const boundaryRadios = document.querySelectorAll('input[name="boundary"]');
-boundaryRadios.forEach(radio => {
-  radio.addEventListener('change', () => {
-    worker.postMessage({ type: "setBoundary", boundary: radio.value });
-  });
-});
-
-const canvas = document.getElementById("canvas");
-canvas.width = L * scale;
-canvas.height = L * scale;
-const ctx = canvas.getContext("2d");
-
-const graphCanvas = document.getElementById("graphCanvas");
-const gCtx = graphCanvas.getContext("2d");
-const maxPoints = graphCanvas.width;
-let magHistory = [];
-
-// Worker
-const worker = new Worker("worker.js");
-worker.postMessage({ type: "init", L: L, beta: 1/2.5 });
-
-// FPS tracking
-let lastFrameTime = performance.now();
-const fpsVal = document.getElementById("fpsVal");
-
-function updateFPS() {
-  const now = performance.now();
-  const delta = now - lastFrameTime;
-  const fps = 1000 / delta;
-  fpsVal.textContent = fps.toFixed(1);
-  lastFrameTime = now;
-}
-
-// Draw lattice setup
-const img = ctx.createImageData(L, L);
-const tempCanvas = document.createElement("canvas");
-tempCanvas.width = L;
-tempCanvas.height = L;
-const tempCtx = tempCanvas.getContext("2d");
-
-function drawLattice(lattice) {
-  for (let i = 0; i < L; i++) {
-    for (let j = 0; j < L; j++) {
-      const idx = (i*L + j)*4;
-      const spin = lattice[i*L + j];
-      const color = spin > 0 ? 255 : 0;
-      img.data[idx] = color;
-      img.data[idx+1] = color;
-      img.data[idx+2] = color;
-      img.data[idx+3] = 255;
-    }
-  }
-  tempCtx.putImageData(img, 0, 0);
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(tempCanvas, 0,0,L*scale,L*scale);
-}
-
-function drawGraph() {
-  gCtx.clearRect(0,0,graphCanvas.width,graphCanvas.height);
-  gCtx.beginPath();
-  gCtx.moveTo(0, graphCanvas.height/2 - magHistory[0]*(graphCanvas.height/2));
-  for (let i = 1; i < magHistory.length; i++) {
-    const x = i;
-    const y = graphCanvas.height/2 - magHistory[i]*(graphCanvas.height/2);
-    gCtx.lineTo(x, y);
-  }
-  gCtx.strokeStyle = "red";
-  gCtx.lineWidth = 1;
-  gCtx.stroke();
-}
-
-// Handle worker messages
-worker.onmessage = (e) => {
-  if(e.data.type === "frame") {
-    drawLattice(e.data.lattice);
-    const M = e.data.mag;
-    document.getElementById("magVal").textContent = M.toFixed(2);
-
-    magHistory.push(M);
-    if (magHistory.length > maxPoints) magHistory.shift();
-    drawGraph();
-
-    updateFPS();
-  }
-};
-
-</script>
-
+  <!-- Load JavaScript modules -->
+  <script src="js/IsingRenderer.js"></script>
+  <script src="js/UIController.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

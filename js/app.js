@@ -114,7 +114,7 @@ class IsingApp {
    */
   handleFrameUpdate(frameData) {
     // Render lattice with model type information
-    this.renderer.renderLattice(frameData.lattice, frameData.modelType);
+    this.renderer.renderLattice(frameData.lattice, frameData.modelType, frameData.pottsStates);
     
     // Update magnetization graph
     this.graph.addPoint(frameData.magnetization);
@@ -174,6 +174,15 @@ class IsingApp {
           type: 'setAlgorithm',
           data: { algorithm }
         });
+      })
+      .on('pottsStatesChange', (states) => {
+        this.worker.postMessage({
+          type: 'setPottsStates',
+          data: { states }
+        });
+        
+        // Clear the graph when changing number of states
+        this.graph.clear();
       });
   }
 

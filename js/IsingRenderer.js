@@ -35,13 +35,15 @@ class IsingRenderer {
   /**
    * Render the lattice to canvas
    */
-  renderLattice(lattice, modelType = 'ising') {
+  renderLattice(lattice, modelType = 'ising', pottsStates = 3) {
     if (!this.imageData || !lattice) return;
 
     if (modelType === 'ising') {
       this.renderIsingLattice(lattice);
     } else if (modelType === 'rotator') {
       this.renderRotatorLattice(lattice);
+    } else if (modelType === 'potts') {
+      this.renderPottsLattice(lattice, pottsStates);
     }
   }
 
@@ -84,6 +86,34 @@ class IsingRenderer {
         // Convert angle to HSL color (hue = angle, full saturation and lightness)
         const hue = (angle / (2 * Math.PI)) * 360;
         const rgb = this.hslToRgb(hue, 100, 50);
+        
+        data[idx] = rgb.r;     // R
+        data[idx + 1] = rgb.g; // G
+        data[idx + 2] = rgb.b; // B
+        data[idx + 3] = 255;   // A
+      }
+    }
+    
+    // Draw to temp canvas then scale to main canvas
+    this.tempCtx.putImageData(this.imageData, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  /**
+   * Render Potts model lattice (discrete states as distinct colors)
+   */
+  renderPottsLattice(lattice, q = 3) {
+    const data = this.imageData.data;
+    
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        const idx = (i * this.size + j) * 4;
+        const state = lattice[i * this.size + j];
+        
+        // Map state to distinct color using HSL
+        const hue = (state / q) * 360;
+        const rgb = this.hslToRgb(hue, 80, 50);
         
         data[idx] = rgb.r;     // R
         data[idx + 1] = rgb.g; // G

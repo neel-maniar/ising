@@ -18,12 +18,11 @@ class UIController {
     this.setupAccordions();
     
     // Initial check for Wolff notifications
-    setTimeout(() => {
+      setTimeout(() => {
       this.updateWolffNotification();
       this.updateWolffNotification2();
-    }, 0);
-    
-    return this;
+      this.updateWolffNotification3();
+    }, 0);    return this;
   }
 
   /**
@@ -33,7 +32,8 @@ class UIController {
     const elementIds = [
       'temp', 'tempVal', 'field', 'fieldVal', 
       'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal',
-      'rollingMeanVal', 'rollingStdVal', 'wolffNotification', 'wolffNotification2'
+      'rollingMeanVal', 'rollingStdVal', 'wolffNotification', 'wolffNotification2', 'wolffNotification3',
+      'pottsStates', 'pottsStatesVal'
     ];
     
     elementIds.forEach(id => {
@@ -72,6 +72,15 @@ class UIController {
       this.triggerCallback('speedChange', speed);
     });
 
+    // Potts states slider
+    if (this.elements.pottsStates) {
+      this.elements.pottsStates.addEventListener('input', () => {
+        const states = parseInt(this.elements.pottsStates.value);
+        this.elements.pottsStatesVal.textContent = states;
+        this.triggerCallback('pottsStatesChange', states);
+      });
+    }
+
     // Boundary condition radios
     this.elements.boundaryRadios.forEach(radio => {
       radio.addEventListener('change', () => {
@@ -88,6 +97,7 @@ class UIController {
           if (radio.checked) {
             this.updateModelDisplay(radio.value);
             this.updateWolffNotification2();
+            this.updateWolffNotification3();
             this.triggerCallback('modelTypeChange', radio.value);
           }
         });
@@ -101,6 +111,7 @@ class UIController {
           if (radio.checked) {
             this.updateWolffNotification();
             this.updateWolffNotification2();
+            this.updateWolffNotification3();
             this.triggerCallback('algorithmChange', radio.value);
           }
         });
@@ -203,6 +214,16 @@ class UIController {
     }
   }
 
+  updateWolffNotification3() {
+    const isWolffSelected = document.querySelector('input[name="algorithm"]:checked')?.value === 'wolff';
+    const ModelTypeIsPotts = document.querySelector('input[name="model"]:checked')?.value === 'potts';
+    const shouldShow = isWolffSelected && ModelTypeIsPotts;
+    
+    if (this.elements.wolffNotification3) {
+      this.elements.wolffNotification3.style.display = shouldShow ? 'block' : 'none';
+    }
+  }
+
   /**
    * Get current control values
    */
@@ -213,7 +234,8 @@ class UIController {
       speed: parseInt(this.elements.speed.value),
       boundary: document.querySelector('input[name="boundary"]:checked')?.value || 'periodic',
       modelType: document.querySelector('input[name="model"]:checked')?.value || 'ising',
-      algorithm: document.querySelector('input[name="algorithm"]:checked')?.value || 'metropolis'
+      algorithm: document.querySelector('input[name="algorithm"]:checked')?.value || 'metropolis',
+      pottsStates: this.elements.pottsStates ? parseInt(this.elements.pottsStates.value) : 3
     };
   }
 
@@ -224,6 +246,11 @@ class UIController {
     const rotatorDisplay = document.getElementById('rotatorMagDisplay');
     if (rotatorDisplay) {
       rotatorDisplay.style.display = modelType === 'rotator' ? 'flex' : 'none';
+    }
+    
+    const pottsDisplay = document.getElementById('pottsControlGroup');
+    if (pottsDisplay) {
+      pottsDisplay.style.display = modelType === 'potts' ? 'flex' : 'none';
     }
   }
 
@@ -262,6 +289,11 @@ class UIController {
     if (values.algorithm !== undefined) {
       const radio = document.querySelector(`input[name="algorithm"][value="${values.algorithm}"]`);
       if (radio) radio.checked = true;
+    }
+    
+    if (values.pottsStates !== undefined && this.elements.pottsStates) {
+      this.elements.pottsStates.value = values.pottsStates;
+      this.elements.pottsStatesVal.textContent = values.pottsStates;
     }
   }
 }

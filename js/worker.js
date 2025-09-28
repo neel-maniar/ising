@@ -46,6 +46,9 @@ class IsingWorker {
       case 'setAlgorithm':
         this.controller.setAlgorithm(data.algorithm);
         break;
+      case 'setPottsStates':
+        this.controller.setPottsStates(data.states);
+        break;
       default:
         console.warn('Unknown message type:', type);
     }
@@ -68,6 +71,7 @@ class IsingWorker {
             magnetization: frameData.magnetization,
             magnetizationComponents: frameData.magnetizationComponents,
             modelType: frameData.modelType,
+            pottsStates: frameData.pottsStates,
             timestamp: frameData.timestamp
           }
         });

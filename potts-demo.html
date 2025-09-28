@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potts Model Demo</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Potts Model Simulator</h1>
+
+    <!-- Model Description -->
+    <div class="math-description">
+      <p>
+        The <strong>Potts Model</strong> is a generalization of the Ising model where each lattice site can be in one of \(q\) discrete states instead of just two. The energy is:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H_{\text{Potts}} = -J \sum_{\langle i,j \rangle} \delta_{s_i, s_j} - h \sum_i \delta_{s_i, 0} \)
+      </p>
+      <p>
+        where \(\delta_{s_i, s_j}\) is the Kronecker delta (1 if states are equal, 0 otherwise).
+        The external field \(h\) favors state 0, breaking symmetry between states.
+      </p>
+      
+      <p><strong>Key Features:</strong></p>
+      <ul>
+        <li><strong>Multiple States:</strong> Each site can be in states \(\{0, 1, 2, \ldots, q-1\}\)</li>
+        <li><strong>Color Coding:</strong> Different states are shown as different colors</li>
+        <li><strong>Phase Transitions:</strong> For \(q \geq 3\), exhibits first-order phase transitions</li>
+        <li><strong>Critical Temperature:</strong> \(T_c = \frac{J}{k_B \ln(1 + \sqrt{q})}\) for \(q \geq 3\)</li>
+      </ul>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Temperature:</label>
+        <input type="range" id="temp" min="0.1" max="3.0" step="0.05" value="1.5">
+        <span class="control-value" id="tempVal">1.5</span>
+      </div>
+
+      <div class="control-group">
+        <label>Field h:</label>
+        <input type="range" id="field" min="-0.20" max="0.20" step="0.01" value="0">
+        <span class="control-value" id="fieldVal">0.00</span>
+      </div>
+
+      <div class="control-group">
+        <label>Speed:</label>
+        <input type="range" id="speed" min="1" max="20" step="1" value="5">
+        <span class="control-value" id="speedVal">5</span> steps/frame
+      </div>
+
+      <div class="control-group">
+        <label>States q:</label>
+        <input type="range" id="pottsStates" min="2" max="8" step="1" value="3">
+        <span class="control-value" id="pottsStatesVal">3</span>
+      </div>
+
+      <div class="control-group">
+        <label>Algorithm:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="algorithm" value="metropolis" checked> Metropolis</label>
+        </div>
+        <div style="color: #999; font-size: 0.9em; font-style: italic;">
+          Note: Wolff algorithm not supported for Potts model (q > 2)
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Boundary:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="boundary" value="periodic" checked> Periodic</label>
+          <label><input type="radio" name="boundary" value="fixedUp"> Fixed State 0</label>
+        </div>
+      </div>
+
+      <div class="control-group fps-display">
+        <label>FPS:</label>
+        <span class="control-value" id="fpsVal">0.0</span>
+      </div>
+    </div>
+
+    <!-- Color Legend -->
+    <div class="math-description">
+      <h3>Color Legend</h3>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; margin: 10px 0;">
+        <div style="display: flex; align-items: center;">
+          <div style="width: 20px; height: 20px; background-color: #cc5500; border: 1px solid #333; margin-right: 5px;"></div>
+          State 0
+        </div>
+        <div style="display: flex; align-items: center;">
+          <div style="width: 20px; height: 20px; background-color: #cccc00; border: 1px solid #333; margin-right: 5px;"></div>
+          State 1
+        </div>
+        <div style="display: flex; align-items: center;">
+          <div style="width: 20px; height: 20px; background-color: #00cc00; border: 1px solid #333; margin-right: 5px;"></div>
+          State 2
+        </div>
+        <div style="color: #666;">... (more states as q increases)</div>
+      </div>
+    </div>
+
+    <!-- Simulation Canvas -->
+    <div class="canvas-container">
+      <h3>Simulation</h3>
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- Magnetization Graph -->
+    <div class="canvas-container">
+      <h3>Order Parameter</h3>
+      <canvas id="graphCanvas" width="400" height="100"></canvas>
+      <div class="magnetization-display">
+        <label>Order Parameter:</label>
+        <span class="control-value" id="magVal">0.000</span>
+        <label style="margin-left: 15px;">Rolling Mean:</label>
+        <span class="control-value" id="rollingMeanVal">0.000</span>
+        <label style="margin-left: 15px;">σ:</label>
+        <span class="control-value" id="rollingStdVal">0.000</span>
+      </div>
+      <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+        Order parameter = (n₀ - N/q) / (N - N/q), where n₀ is count of state 0, N is total sites, q is number of states.
+        Values: +1 (all state 0), 0 (random), -1 (no state 0).
+      </p>
+    </div>
+  </div>
+
+  <!-- Load JavaScript modules -->
+  <script>
+    // Simple initialization for Potts-only demo
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set model type to Potts and hide model selection
+      const modelInput = document.createElement('input');
+      modelInput.type = 'hidden';
+      modelInput.name = 'model';
+      modelInput.value = 'potts';
+      document.body.appendChild(modelInput);
+    });
+  </script>
+  <script src="js/IsingRenderer.js"></script>
+  <script src="js/UIController.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
