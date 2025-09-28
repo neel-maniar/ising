@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favicon Generator</title>
+</head>
+<body>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+    <canvas id="canvas32" width="32" height="32"></canvas>
+    <script>
+        function createFavicon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            const cellSize = size / 5; // 5x5 grid
+            
+            // Colors representing spin up (blue) and spin down (red)
+            const colors = ['#2563eb', '#dc2626'];
+            
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    // Checkerboard pattern
+                    const colorIndex = (row + col) % 2;
+                    ctx.fillStyle = colors[colorIndex];
+                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                }
+            }
+            
+            // Output data URL
+            console.log(`${size}x${size}:`, canvas.toDataURL());
+        }
+        
+        createFavicon('canvas16', 16);
+        createFavicon('canvas32', 32);
+    </script>
+</body>
+</html>

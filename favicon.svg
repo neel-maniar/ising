@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- 5x5 grid with alternating black and white squares representing Ising spins -->
+  
+  <!-- Row 1 -->
+  <rect x="0" y="0" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="6.4" y="0" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="12.8" y="0" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="19.2" y="0" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="25.6" y="0" width="6.4" height="6.4" fill="#000000"/>
+  
+  <!-- Row 2 -->
+  <rect x="0" y="6.4" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="6.4" y="6.4" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="12.8" y="6.4" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="19.2" y="6.4" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="25.6" y="6.4" width="6.4" height="6.4" fill="#ffffff"/>
+  
+  <!-- Row 3 -->
+  <rect x="0" y="12.8" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="6.4" y="12.8" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="12.8" y="12.8" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="19.2" y="12.8" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="25.6" y="12.8" width="6.4" height="6.4" fill="#000000"/>
+  
+  <!-- Row 4 -->
+  <rect x="0" y="19.2" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="6.4" y="19.2" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="12.8" y="19.2" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="19.2" y="19.2" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="25.6" y="19.2" width="6.4" height="6.4" fill="#ffffff"/>
+  
+  <!-- Row 5 -->
+  <rect x="0" y="25.6" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="6.4" y="25.6" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="12.8" y="25.6" width="6.4" height="6.4" fill="#000000"/>
+  <rect x="19.2" y="25.6" width="6.4" height="6.4" fill="#ffffff"/>
+  <rect x="25.6" y="25.6" width="6.4" height="6.4" fill="#000000"/>
+</svg>
