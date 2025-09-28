@@ -31,7 +31,7 @@ class UIController {
   cacheElements() {
     const elementIds = [
       'temp', 'tempVal', 'field', 'fieldVal', 
-      'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal',
+      'speed', 'speedVal', 'resolution', 'resolutionVal','fpsVal', 'magVal', 'magXVal', 'magYVal',
       'rollingMeanVal', 'rollingStdVal', 'wolffNotification', 'wolffNotification2', 'wolffNotification3',
       'pottsStates', 'pottsStatesVal'
     ];
@@ -71,6 +71,15 @@ class UIController {
       this.elements.speedVal.textContent = speed;
       this.triggerCallback('speedChange', speed);
     });
+
+    // Resolution slider
+    if (this.elements.resolution) {
+      this.elements.resolution.addEventListener('input', () => {
+        const resolution = parseInt(this.elements.resolution.value);
+        this.elements.resolutionVal.textContent = resolution + '×' + resolution;
+        this.triggerCallback('resolutionChange', resolution);
+      });
+    }
 
     // Potts states slider
     if (this.elements.pottsStates) {
@@ -232,6 +241,7 @@ class UIController {
       temperature: parseFloat(this.elements.temp.value),
       field: parseFloat(this.elements.field.value),
       speed: parseInt(this.elements.speed.value),
+      resolution: this.elements.resolution ? parseInt(this.elements.resolution.value) : 300,
       boundary: document.querySelector('input[name="boundary"]:checked')?.value || 'periodic',
       modelType: document.querySelector('input[name="model"]:checked')?.value || 'ising',
       algorithm: document.querySelector('input[name="algorithm"]:checked')?.value || 'metropolis',

@@ -183,7 +183,51 @@ class IsingApp {
         
         // Clear the graph when changing number of states
         this.graph.clear();
+      })
+      .on('resolutionChange', (resolution) => {
+        this.handleResolutionChange(resolution);
       });
+  }
+
+  /**
+   * Handle resolution change
+   */
+  handleResolutionChange(resolution) {
+    // Stop current simulation
+    this.stop();
+    
+    // Update config
+    this.config.latticeSize = resolution;
+    
+    // Calculate scale to keep similar visual size
+    // Target canvas size around 300-400px
+    const targetSize = 350;
+    this.config.canvasScale = Math.max(1, Math.round(targetSize / resolution));
+    
+    // Update renderer scale and reinitialize
+    this.renderer.scale = this.config.canvasScale;
+    this.renderer.initialize(resolution);
+    
+    // Clear graph
+    this.graph.clear();
+    
+    // Reinitialize worker with new size
+    setTimeout(() => {
+      const currentValues = this.ui.getCurrentValues();
+      this.worker.postMessage({
+        type: 'init',
+        data: {
+          size: resolution,
+          temperature: currentValues.temperature,
+          modelType: currentValues.modelType
+        }
+      });
+      
+      // Restart simulation
+      setTimeout(() => {
+        this.start();
+      }, 100);
+    }, 100);
   }
 
   /**
@@ -211,11 +255,13 @@ class IsingApp {
     
     // Reinitialize worker
     setTimeout(() => {
+      const currentValues = this.ui.getCurrentValues();
       this.worker.postMessage({
         type: 'init',
         data: {
           size: this.config.latticeSize,
-          temperature: this.ui.getCurrentValues().temperature
+          temperature: currentValues.temperature,
+          modelType: currentValues.modelType
         }
       });
     }, 100);

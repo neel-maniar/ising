@@ -145,6 +145,7 @@
         <li><strong>Model Type:</strong> Choose between Ising (binary spins ±1), Rotator/XY (continuous angles), or Potts (discrete states). The Ising model shows black/white blocks, the Rotator model displays a colorful pattern where colors represent spin directions, and the Potts model shows distinct colors for each discrete state.</li>
         <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks (Ising) or coherent color patterns (Rotator). At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
         <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
+        <li><strong>Resolution:</strong> Controls the lattice size (number of spins). Higher resolutions show more detail but require more computational power. The visual size is automatically adjusted to maintain a consistent display.</li>
         <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
       </ul>
       <p>
@@ -170,6 +171,12 @@
         <label>Speed:</label>
         <input type="range" id="speed" min="1" max="30" step="1" value="1">
         <span class="control-value" id="speedVal">1</span> steps/frame
+      </div>
+
+      <div class="control-group">
+        <label>Resolution:</label>
+        <input type="range" id="resolution" min="50" max="500" step="10" value="300">
+        <span class="control-value" id="resolutionVal">300×300</span>
       </div>
 
       <div class="control-group">
