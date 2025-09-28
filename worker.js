@@ -1,6 +1,7 @@
 let L, beta, lattice;
 let stepsPerFrame = 1;
 let boundary = "periodic";
+let h = 0;
 
 let expTable = {};  // precomputed Metropolis probabilities
 let indices = [];   // shuffled lattice indices for random sequential updates
@@ -12,24 +13,18 @@ onmessage = function(e) {
     beta = data.beta;
     lattice = new Int8Array(L*L);
     for(let i=0;i<L*L;i++) lattice[i] = Math.random()<0.5?1:-1;
-    precomputeExp();
     createIndices();
     runSimulation();
   } else if(data.type === "setBeta") {
     beta = data.beta;
-    precomputeExp();
   } else if(data.type === "setSpeed") {
     stepsPerFrame = data.steps;
   } else if(data.type === "setBoundary") {
     boundary = data.boundary;
+  } else if(data.type === "setField") {
+    h = data.h;
   }
 };
-
-function precomputeExp() {
-  // possible ΔE values: 4, 8
-  expTable[4] = Math.exp(-beta*4);
-  expTable[8] = Math.exp(-beta*8);
-}
 
 function getSpin(i,j) {
   if(boundary === "periodic") return lattice[((i+L)%L)*L + ((j+L)%L)];
@@ -65,8 +60,8 @@ function metropolisStep() {
     const j = idx % L;
     const s = lattice[idx];
     const nb = getSpin(i+1,j)+getSpin(i-1,j)+getSpin(i,j+1)+getSpin(i,j-1);
-    const dE = 2*s*nb;
-    if(dE<=0 || Math.random()<expTable[dE] || (dE===0 && Math.random()<0.5)) {
+    const dE = 2*s*(nb + h);
+    if (dE <= 0 || Math.random() < Math.exp(-beta * dE)) {
       lattice[idx] = -s;
     }
   }
