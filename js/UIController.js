@@ -25,7 +25,8 @@ class UIController {
   cacheElements() {
     const elementIds = [
       'temp', 'tempVal', 'field', 'fieldVal', 
-      'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal'
+      'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal',
+      'rollingMeanVal', 'rollingStdVal'
     ];
     
     elementIds.forEach(id => {
@@ -127,9 +128,19 @@ class UIController {
   /**
    * Update display values
    */
-  updateMagnetization(value, components = null) {
+  updateMagnetization(value, components = null, rollingStats = null) {
     if (this.elements.magVal) {
       this.elements.magVal.textContent = value.toFixed(3);
+    }
+    
+    // Update rolling statistics
+    if (rollingStats) {
+      if (this.elements.rollingMeanVal) {
+        this.elements.rollingMeanVal.textContent = rollingStats.mean.toFixed(3);
+      }
+      if (this.elements.rollingStdVal) {
+        this.elements.rollingStdVal.textContent = rollingStats.std.toFixed(3);
+      }
     }
     
     // Update magnetization components for rotator model

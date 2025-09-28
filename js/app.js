@@ -120,8 +120,11 @@ class IsingApp {
     this.graph.addPoint(frameData.magnetization);
     this.graph.render();
     
+    // Get rolling statistics from graph
+    const rollingStats = this.graph.getCurrentStats();
+    
     // Update UI displays
-    this.ui.updateMagnetization(frameData.magnetization, frameData.magnetizationComponents);
+    this.ui.updateMagnetization(frameData.magnetization, frameData.magnetizationComponents, rollingStats);
     
     // Update FPS
     const fps = this.fpsTracker.recordFrame();

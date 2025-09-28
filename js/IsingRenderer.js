@@ -157,10 +157,14 @@ class MagnetizationGraph {
     this.ctx = this.canvas.getContext('2d');
     this.maxPoints = maxPoints;
     this.history = [];
+    this.windowSize = 50; // Window for calculating uncertainty bounds
+    this.currentStats = { mean: 0, std: 0 }; // Current rolling statistics
     
     this.lineColor = '#ff0000';
+    this.meanLineColor = '#0066cc';
     this.lineWidth = 1;
     this.backgroundColor = '#ffffff';
+    this.uncertaintyColor = 'rgba(255, 0, 0, 0.2)';
   }
 
   /**
@@ -174,7 +178,33 @@ class MagnetizationGraph {
   }
 
   /**
-   * Render the magnetization graph
+   * Calculate running statistics for uncertainty bounds
+   */
+  calculateUncertaintyBounds() {
+    const bounds = [];
+    
+    for (let i = 0; i < this.history.length; i++) {
+      const start = Math.max(0, i - this.windowSize + 1);
+      const end = i + 1;
+      const window = this.history.slice(start, end);
+      
+      if (window.length < 2) {
+        bounds.push({ mean: this.history[i], std: 0 });
+        continue;
+      }
+      
+      const mean = window.reduce((a, b) => a + b, 0) / window.length;
+      const variance = window.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (window.length - 1);
+      const std = Math.sqrt(variance);
+      
+      bounds.push({ mean, std });
+    }
+    
+    return bounds;
+  }
+
+  /**
+   * Render the magnetization graph with uncertainty bounds
    */
   render() {
     const width = this.canvas.width;
@@ -186,6 +216,42 @@ class MagnetizationGraph {
     
     if (this.history.length < 2) return;
     
+    const xStep = width / (this.maxPoints - 1);
+    const startX = Math.max(0, width - this.history.length * xStep);
+    
+    // Calculate uncertainty bounds
+    const bounds = this.calculateUncertaintyBounds();
+    
+    // Draw uncertainty bounds as filled area
+    if (bounds.length > 1) {
+      this.ctx.fillStyle = this.uncertaintyColor;
+      this.ctx.beginPath();
+      
+      // Draw upper bound
+      for (let i = 0; i < this.history.length; i++) {
+        const x = startX + i * xStep;
+        const upperBound = Math.min(1, Math.max(-1, bounds[i].mean + bounds[i].std));
+        const y = height / 2 - upperBound * (height / 2);
+        
+        if (i === 0) {
+          this.ctx.moveTo(x, y);
+        } else {
+          this.ctx.lineTo(x, y);
+        }
+      }
+      
+      // Draw lower bound (reverse direction)
+      for (let i = this.history.length - 1; i >= 0; i--) {
+        const x = startX + i * xStep;
+        const lowerBound = Math.min(1, Math.max(-1, bounds[i].mean - bounds[i].std));
+        const y = height / 2 - lowerBound * (height / 2);
+        this.ctx.lineTo(x, y);
+      }
+      
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+    
     // Draw center line (M = 0)
     this.ctx.strokeStyle = '#cccccc';
     this.ctx.lineWidth = 0.5;
@@ -194,13 +260,30 @@ class MagnetizationGraph {
     this.ctx.lineTo(width, height / 2);
     this.ctx.stroke();
     
+    // Draw rolling mean line
+    this.ctx.strokeStyle = this.meanLineColor;
+    this.ctx.lineWidth = 1.5;
+    this.ctx.setLineDash([5, 5]); // Dashed line
+    this.ctx.beginPath();
+    
+    for (let i = 0; i < this.history.length; i++) {
+      const x = startX + i * xStep;
+      const y = height / 2 - bounds[i].mean * (height / 2);
+      
+      if (i === 0) {
+        this.ctx.moveTo(x, y);
+      } else {
+        this.ctx.lineTo(x, y);
+      }
+    }
+    
+    this.ctx.stroke();
+    this.ctx.setLineDash([]); // Reset line dash
+    
     // Draw magnetization line
     this.ctx.strokeStyle = this.lineColor;
     this.ctx.lineWidth = this.lineWidth;
     this.ctx.beginPath();
-    
-    const xStep = width / (this.maxPoints - 1);
-    const startX = Math.max(0, width - this.history.length * xStep);
     
     for (let i = 0; i < this.history.length; i++) {
       const x = startX + i * xStep;
@@ -214,6 +297,12 @@ class MagnetizationGraph {
     }
     
     this.ctx.stroke();
+    
+    // Update current statistics for display
+    if (bounds.length > 0) {
+      const latest = bounds[bounds.length - 1];
+      this.currentStats = { mean: latest.mean, std: latest.std };
+    }
   }
 
   /**
@@ -225,12 +314,21 @@ class MagnetizationGraph {
   }
 
   /**
+   * Get current rolling statistics
+   */
+  getCurrentStats() {
+    return this.currentStats;
+  }
+
+  /**
    * Set styling options
    */
   setStyle(options = {}) {
     if (options.lineColor) this.lineColor = options.lineColor;
+    if (options.meanLineColor) this.meanLineColor = options.meanLineColor;
     if (options.lineWidth) this.lineWidth = options.lineWidth;
     if (options.backgroundColor) this.backgroundColor = options.backgroundColor;
+    if (options.uncertaintyColor) this.uncertaintyColor = options.uncertaintyColor;
     return this;
   }
 }

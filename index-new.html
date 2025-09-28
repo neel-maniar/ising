@@ -86,6 +86,9 @@
           </span>
           and displayed as a graph alongside the lattice.
         </p>
+        <p>
+          <strong>Uncertainty Bounds:</strong> The magnetization graph displays uncertainty bounds (shown as a light red shaded area) that represent the statistical fluctuations in magnetization over a rolling window of recent measurements. These bounds are calculated as \( M_{mean} \pm \sigma_M \), where \( \sigma_M \) is the standard deviation of magnetization within the window. The bounds help visualize the natural thermal fluctuations and become wider near phase transitions where the system exhibits larger statistical variations.
+        </p>
 
       <p>
         <strong>Color Mapping in Rotator Model:</strong> In the XY/rotator model, each spin is represented by an angle \(\theta_i \in [0, 2\pi)\) radians. The color mapping transforms this angle to HSL hue space using \(\text{hue} = \frac{\theta_i}{2\pi} \times 360°\), with saturation=100% and lightness=50%. Specifically:
@@ -172,8 +175,12 @@
       <h3>Magnetisation Graph</h3>
       <canvas id="graphCanvas" width="400" height="100"></canvas>
       <div class="magnetization-display">
-        <label>Magnetisation:</label>
+        <label>Current M:</label>
         <span class="control-value" id="magVal">0.000</span>
+        <label style="margin-left: 15px;">Rolling M̄:</label>
+        <span class="control-value" id="rollingMeanVal">0.000</span>
+        <label style="margin-left: 15px;">σ:</label>
+        <span class="control-value" id="rollingStdVal">0.000</span>
       </div>
       <div class="magnetization-display" id="rotatorMagDisplay" style="display: none;">
         <label>M<sub>x</sub>:</label>
