@@ -75,7 +75,8 @@ class IsingApp {
       type: 'init',
       data: {
         size: this.config.latticeSize,
-        temperature: this.config.initialTemperature
+        temperature: this.config.initialTemperature,
+        modelType: 'ising' // Default to Ising model
       }
     });
   }
@@ -112,15 +113,15 @@ class IsingApp {
    * Handle frame updates from worker
    */
   handleFrameUpdate(frameData) {
-    // Render lattice
-    this.renderer.renderLattice(frameData.lattice);
+    // Render lattice with model type information
+    this.renderer.renderLattice(frameData.lattice, frameData.modelType);
     
     // Update magnetization graph
     this.graph.addPoint(frameData.magnetization);
     this.graph.render();
     
     // Update UI displays
-    this.ui.updateMagnetization(frameData.magnetization);
+    this.ui.updateMagnetization(frameData.magnetization, frameData.magnetizationComponents);
     
     // Update FPS
     const fps = this.fpsTracker.recordFrame();
@@ -155,6 +156,15 @@ class IsingApp {
           type: 'setBoundary',
           data: { boundary }
         });
+      })
+      .on('modelTypeChange', (modelType) => {
+        this.worker.postMessage({
+          type: 'setModelType',
+          data: { modelType }
+        });
+        
+        // Clear the graph when changing model types
+        this.graph.clear();
       });
   }
 

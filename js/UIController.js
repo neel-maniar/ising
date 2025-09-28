@@ -25,7 +25,7 @@ class UIController {
   cacheElements() {
     const elementIds = [
       'temp', 'tempVal', 'field', 'fieldVal', 
-      'speed', 'speedVal', 'fpsVal', 'magVal'
+      'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal'
     ];
     
     elementIds.forEach(id => {
@@ -33,6 +33,7 @@ class UIController {
     });
     
     this.elements.boundaryRadios = document.querySelectorAll('input[name="boundary"]');
+    this.elements.modelRadios = document.querySelectorAll('input[name="model"]');
   }
 
   /**
@@ -68,6 +69,18 @@ class UIController {
         }
       });
     });
+
+    // Model type radios
+    if (this.elements.modelRadios) {
+      this.elements.modelRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.checked) {
+            this.updateModelDisplay(radio.value);
+            this.triggerCallback('modelTypeChange', radio.value);
+          }
+        });
+      });
+    }
   }
 
   /**
@@ -114,9 +127,15 @@ class UIController {
   /**
    * Update display values
    */
-  updateMagnetization(value) {
+  updateMagnetization(value, components = null) {
     if (this.elements.magVal) {
-      this.elements.magVal.textContent = value.toFixed(2);
+      this.elements.magVal.textContent = value.toFixed(3);
+    }
+    
+    // Update magnetization components for rotator model
+    if (components && this.elements.magXVal && this.elements.magYVal) {
+      this.elements.magXVal.textContent = components.x.toFixed(3);
+      this.elements.magYVal.textContent = components.y.toFixed(3);
     }
   }
 
@@ -134,8 +153,19 @@ class UIController {
       temperature: parseFloat(this.elements.temp.value),
       field: parseFloat(this.elements.field.value),
       speed: parseInt(this.elements.speed.value),
-      boundary: document.querySelector('input[name="boundary"]:checked')?.value || 'periodic'
+      boundary: document.querySelector('input[name="boundary"]:checked')?.value || 'periodic',
+      modelType: document.querySelector('input[name="model"]:checked')?.value || 'ising'
     };
+  }
+
+  /**
+   * Update display based on model type
+   */
+  updateModelDisplay(modelType) {
+    const rotatorDisplay = document.getElementById('rotatorMagDisplay');
+    if (rotatorDisplay) {
+      rotatorDisplay.style.display = modelType === 'rotator' ? 'flex' : 'none';
+    }
   }
 
   /**
@@ -160,6 +190,14 @@ class UIController {
     if (values.boundary !== undefined) {
       const radio = document.querySelector(`input[name="boundary"][value="${values.boundary}"]`);
       if (radio) radio.checked = true;
+    }
+    
+    if (values.modelType !== undefined) {
+      const radio = document.querySelector(`input[name="model"][value="${values.modelType}"]`);
+      if (radio) {
+        radio.checked = true;
+        this.updateModelDisplay(values.modelType);
+      }
     }
   }
 }

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ising vs Rotator Model Comparison</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .comparison { display: flex; gap: 20px; margin: 20px 0; }
+        .model-demo { flex: 1; text-align: center; }
+        canvas { border: 1px solid #ccc; }
+        h2 { color: #333; }
+    </style>
+    <script src="js/IsingModel.js"></script>
+    <script src="js/IsingRenderer.js"></script>
+</head>
+<body>
+    <h1>Model Comparison: Ising vs Rotator</h1>
+    
+    <div class="comparison">
+        <div class="model-demo">
+            <h2>Ising Model</h2>
+            <canvas id="isingCanvas" width="200" height="200"></canvas>
+            <p>Binary spins: ±1<br>Black/White visualization</p>
+        </div>
+        <div class="model-demo">
+            <h2>Rotator (XY) Model</h2>
+            <canvas id="rotatorCanvas" width="200" height="200"></canvas>
+            <p>Continuous angles: 0-2π<br>Color wheel visualization</p>
+        </div>
+    </div>
+
+    <button onclick="stepModels()">Step Both Models</button>
+    <button onclick="resetModels()">Reset Both Models</button>
+
+    <script>
+        // Create models
+        const isingModel = new IsingModel(50, 2.0, 'ising');
+        const rotatorModel = new IsingModel(50, 2.0, 'rotator');
+        
+        // Create renderers
+        const isingRenderer = new IsingRenderer('isingCanvas', 4);
+        const rotatorRenderer = new IsingRenderer('rotatorCanvas', 4);
+        
+        // Initialize
+        isingRenderer.initialize(50);
+        rotatorRenderer.initialize(50);
+        
+        function renderModels() {
+            isingRenderer.renderLattice(isingModel.getLattice(), 'ising');
+            rotatorRenderer.renderLattice(rotatorModel.getLattice(), 'rotator');
+        }
+        
+        function stepModels() {
+            isingModel.metropolisStep();
+            rotatorModel.metropolisStep();
+            renderModels();
+        }
+        
+        function resetModels() {
+            isingModel.initializeLattice();
+            rotatorModel.initializeLattice();
+            renderModels();
+        }
+        
+        // Initial render
+        renderModels();
+        
+        // Auto-step for demonstration
+        setInterval(stepModels, 100);
+    </script>
+</body>
+</html>

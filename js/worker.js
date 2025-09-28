@@ -40,6 +40,9 @@ class IsingWorker {
       case 'setStepsPerFrame':
         this.controller.setStepsPerFrame(data.steps);
         break;
+      case 'setModelType':
+        this.controller.setModelType(data.modelType);
+        break;
       default:
         console.warn('Unknown message type:', type);
     }
@@ -49,10 +52,10 @@ class IsingWorker {
    * Initialize the simulation
    */
   initialize(params) {
-    const { size = 300, temperature = 2.5 } = params;
+    const { size = 300, temperature = 2.5, modelType = 'ising' } = params;
     
     this.controller
-      .initialize(size, temperature)
+      .initialize(size, temperature, modelType)
       .setFrameCallback((frameData) => {
         // Send frame data back to main thread
         this.postMessage({
@@ -60,6 +63,8 @@ class IsingWorker {
           data: {
             lattice: frameData.lattice,
             magnetization: frameData.magnetization,
+            magnetizationComponents: frameData.magnetizationComponents,
+            modelType: frameData.modelType,
             timestamp: frameData.timestamp
           }
         });

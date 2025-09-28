@@ -35,9 +35,20 @@ class IsingRenderer {
   /**
    * Render the lattice to canvas
    */
-  renderLattice(lattice) {
+  renderLattice(lattice, modelType = 'ising') {
     if (!this.imageData || !lattice) return;
 
+    if (modelType === 'ising') {
+      this.renderIsingLattice(lattice);
+    } else if (modelType === 'rotator') {
+      this.renderRotatorLattice(lattice);
+    }
+  }
+
+  /**
+   * Render Ising model lattice (binary spins)
+   */
+  renderIsingLattice(lattice) {
     const data = this.imageData.data;
     
     for (let i = 0; i < this.size; i++) {
@@ -57,6 +68,69 @@ class IsingRenderer {
     this.tempCtx.putImageData(this.imageData, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.drawImage(this.tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  /**
+   * Render rotator model lattice (continuous angles as colors)
+   */
+  renderRotatorLattice(lattice) {
+    const data = this.imageData.data;
+    
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        const idx = (i * this.size + j) * 4;
+        const angle = lattice[i * this.size + j];
+        
+        // Convert angle to HSL color (hue = angle, full saturation and lightness)
+        const hue = (angle / (2 * Math.PI)) * 360;
+        const rgb = this.hslToRgb(hue, 100, 50);
+        
+        data[idx] = rgb.r;     // R
+        data[idx + 1] = rgb.g; // G
+        data[idx + 2] = rgb.b; // B
+        data[idx + 3] = 255;   // A
+      }
+    }
+    
+    // Draw to temp canvas then scale to main canvas
+    this.tempCtx.putImageData(this.imageData, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  /**
+   * Convert HSL to RGB
+   */
+  hslToRgb(h, s, l) {
+    h = h / 360;
+    s = s / 100;
+    l = l / 100;
+    
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255)
+    };
   }
 
   /**

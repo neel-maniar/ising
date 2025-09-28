@@ -10,6 +10,7 @@ const AppConfig = {
     defaultTemperature: 2.5,
     defaultField: 0.0,
     defaultBoundary: 'periodic',
+    defaultModelType: 'ising',
     defaultStepsPerFrame: 1,
     maxStepsPerFrame: 30,
     targetFPS: 30
@@ -21,7 +22,9 @@ const AppConfig = {
     pixelated: true,
     backgroundColor: '#ffffff',
     spinUpColor: '#ffffff',
-    spinDownColor: '#000000'
+    spinDownColor: '#000000',
+    rotatorSaturation: 100,
+    rotatorLightness: 50
   },
 
   // Graph settings

@@ -19,8 +19,8 @@ class SimulationController {
   /**
    * Initialize the simulation with given parameters
    */
-  initialize(size, temperature) {
-    this.model = new IsingModel(size, temperature);
+  initialize(size, temperature, modelType = 'ising') {
+    this.model = new IsingModel(size, temperature, modelType);
     return this;
   }
 
@@ -87,6 +87,8 @@ class SimulationController {
         const frameData = {
           lattice: this.model.getLattice(),
           magnetization: this.model.calculateMagnetization(),
+          magnetizationComponents: this.model.getMagnetizationComponents(),
+          modelType: this.model.getModelType(),
           timestamp: now
         };
         this.frameCallback(frameData);
@@ -134,6 +136,13 @@ class SimulationController {
     return this;
   }
 
+  setModelType(modelType) {
+    if (this.model) {
+      this.model.setModelType(modelType);
+    }
+    return this;
+  }
+
   /**
    * Get current model state
    */
@@ -143,6 +152,8 @@ class SimulationController {
     return {
       lattice: this.model.getLattice(),
       magnetization: this.model.calculateMagnetization(),
+      magnetizationComponents: this.model.getMagnetizationComponents(),
+      modelType: this.model.getModelType(),
       size: this.model.getSize()
     };
   }

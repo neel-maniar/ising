@@ -1,7 +1,7 @@
 {
   "name": "ising-model-simulator",
   "version": "2.0.0",
-  "description": "Interactive Ising Model simulation with modular architecture",
+  "description": "Interactive Ising and Rotator (XY) Model simulations with modular architecture",
   "main": "index.html",
   "scripts": {
     "serve": "python3 -m http.server 8000",
@@ -15,11 +15,15 @@
   },
   "keywords": [
     "ising-model",
+    "xy-model",
+    "rotator-model",
     "physics",
     "simulation",
     "statistical-mechanics",
     "web-worker",
-    "canvas"
+    "canvas",
+    "magnetism",
+    "phase-transitions"
   ],
   "author": "Neel Maniar",
   "license": "MIT",

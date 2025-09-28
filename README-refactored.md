@@ -57,27 +57,40 @@ The application has been restructured into a modular architecture with clear sep
 
 ## Key Improvements
 
-### 1. **Modular Architecture**
+### 1. **Dual Model Support**
+- **Ising Model**: Classic binary spins (±1) with black/white visualization
+- **Rotator (XY) Model**: Continuous angle spins with colorful HSL visualization
+- Seamless switching between models with preserved performance
+- Model-specific magnetization calculations and displays
+
+### 2. **Modular Architecture**
 - Separated concerns into distinct, reusable modules
 - Each class has a single responsibility
 - Easy to test, maintain, and extend
 
-### 2. **Performance Optimization**
+### 3. **Performance Optimization**
 - Web Worker prevents UI blocking during intensive calculations
 - Efficient canvas rendering with image data manipulation
 - Configurable frame rates and update frequencies
 
-### 3. **Better User Experience**
+### 4. **Better User Experience**
 - Responsive design that works on mobile devices
 - Modern CSS with smooth animations and transitions
 - Improved visual feedback and controls
+- Real-time model switching with automatic graph clearing
 
-### 4. **Code Quality**
+### 5. **Advanced Physics**
+- Proper Metropolis-Hastings algorithm for both models
+- Correct energy calculations for XY model interactions
+- Vector magnetization display for rotator model
+- Configurable boundary conditions for both models
+
+### 6. **Code Quality**
 - Consistent coding style and documentation
 - Error handling and debugging support
 - Event-driven architecture for loose coupling
 
-### 5. **Extensibility**
+### 7. **Extensibility**
 - Easy to add new visualization modes
 - Configurable simulation parameters
 - Plugin-ready architecture for additional features
@@ -122,17 +135,39 @@ Then open http://localhost:8000/index-new.html in your browser.
 - Canvas 2D rendering support
 - ES6+ JavaScript features
 
+## Model Details
+
+### Ising Model
+- **Spins**: Binary values (±1)
+- **Energy**: \(H = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i\)
+- **Visualization**: Black/white pixels
+- **Magnetization**: Simple average of spins
+
+### Rotator (XY) Model  
+- **Spins**: Continuous angles (0 to 2π)
+- **Energy**: \(H = -J \sum_{\langle i,j \rangle} \cos(\theta_i - \theta_j) - h \sum_i \cos(\theta_i)\)
+- **Visualization**: HSL color wheel (hue = angle)
+- **Magnetization**: Magnitude of vector sum \(\sqrt{M_x^2 + M_y^2}\)
+
+## Demo Pages
+
+- **Main Application**: `index-new.html` - Full-featured simulator
+- **Model Comparison**: `demo.html` - Side-by-side model comparison
+- **Module Tests**: `test.html` - Basic functionality testing
+
 ## Future Enhancements
 
 Potential areas for expansion:
 
-1. **Multiple Lattice Types** - Triangular, hexagonal grids
-2. **Advanced Algorithms** - Cluster updates, parallel tempering
-3. **Data Export** - CSV export of magnetization data
-4. **3D Visualization** - WebGL-based 3D lattice rendering
-5. **Real-time Analytics** - Energy, correlation functions
-6. **Presets System** - Save/load simulation configurations
-7. **Educational Mode** - Step-by-step algorithm explanation
+1. **Additional Models** - Heisenberg, Potts models
+2. **Multiple Lattice Types** - Triangular, hexagonal grids  
+3. **Advanced Algorithms** - Cluster updates, parallel tempering
+4. **Data Export** - CSV export of magnetization data
+5. **3D Visualization** - WebGL-based 3D lattice rendering
+6. **Real-time Analytics** - Energy, correlation functions, susceptibility
+7. **Presets System** - Save/load simulation configurations
+8. **Educational Mode** - Step-by-step algorithm explanation
+9. **Phase Diagrams** - Temperature sweeps and critical point analysis
 
 ## Performance Notes
 

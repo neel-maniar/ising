@@ -32,21 +32,28 @@
     <!-- Mathematical Description -->
     <div class="math-description">
       <p>
-        Mathematically, the Ising model defines the energy of a lattice of spins \(s_i \in \{-1,1\}\) as:
+        <strong>Ising Model:</strong> The energy of a lattice of binary spins \(s_i \in \{-1,1\}\) is:
       </p>
       <p style="text-align:center; font-size:1.1em;">
-        \( H = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i \)
+        \( H_{\text{Ising}} = -J \sum_{\langle i,j \rangle} s_i s_j - h \sum_i s_i \)
+      </p>
+      <p>
+        <strong>Rotator (XY) Model:</strong> The energy of a lattice of continuous spins \(\theta_i \in [0, 2\pi)\) is:
+      </p>
+      <p style="text-align:center; font-size:1.1em;">
+        \( H_{\text{XY}} = -J \sum_{\langle i,j \rangle} \cos(\theta_i - \theta_j) - h \sum_i \cos(\theta_i) \)
       </p>
       <p>
         where:
         <ul>
           <li>\(J\) is the interaction strength between neighboring spins</li>
           <li>\(\langle i,j \rangle\) indicates the sum over nearest neighbor pairs</li>
-          <li>\(h\) is an external magnetic field (here, \(h=0\))</li>
+          <li>\(h\) is an external magnetic field</li>
+          <li>For the XY model, \(\theta_i\) represents the angle of spin \(i\)</li>
         </ul>
       </p>
       <p>
-        The simulation evolves the lattice to minimize the energy while balancing thermal fluctuations, controlled by the temperature \(T\) (or \(\beta = 1/k_B T\)).
+        Both simulations use the Metropolis-Hastings algorithm to evolve the lattice, balancing energy minimization with thermal fluctuations controlled by temperature \(T\) (or \(\beta = 1/k_B T\)).
       </p>
     </div>
 
@@ -89,12 +96,13 @@
         Use the sliders and radio buttons to interact with the simulation:
       </p>
       <ul>
-        <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks. At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
+        <li><strong>Model Type:</strong> Choose between Ising (binary spins ±1) or Rotator/XY (continuous angles). The Ising model shows black/white blocks, while the Rotator model displays a colorful pattern where colors represent spin directions.</li>
+        <li><strong>Temperature:</strong> Increasing the temperature increases randomness. At low temperatures, spins tend to align, producing a large net magnetisation visible as mostly white or black lattice blocks (Ising) or coherent color patterns (Rotator). At high temperatures, spins fluctuate randomly, reducing magnetisation.</li>
         <li><strong>Speed (steps per frame):</strong> Controls how many Metropolis updates occur per frame. Higher speeds evolve the lattice faster but may appear less smooth if your browser struggles to render.</li>
         <li><strong>Boundary conditions:</strong> Periodic boundaries make the edges wrap around, while fixed \(+1\) or \(-1\) keep edge spins constant.</li>
       </ul>
       <p>
-        The live magnetisation graph below shows the average spin of the whole lattice. Close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised.
+        The live magnetisation graph below shows the average spin of the whole lattice. For the Ising model, close to \(\pm 1\) means magnetised, whereas close to \(0\) means demagnetised. For the Rotator model, the magnetisation represents the magnitude of the average spin vector, ranging from 0 (completely disordered) to 1 (perfectly aligned).
       </p>
     </div>
 
@@ -116,6 +124,14 @@
         <label>Speed:</label>
         <input type="range" id="speed" min="1" max="30" step="1" value="1">
         <span class="control-value" id="speedVal">1</span> steps/frame
+      </div>
+
+      <div class="control-group">
+        <label>Model:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="model" value="ising" checked> Ising</label>
+          <label><input type="radio" name="model" value="rotator"> Rotator (XY)</label>
+        </div>
       </div>
 
       <div class="control-group">
@@ -145,7 +161,13 @@
       <canvas id="graphCanvas" width="400" height="100"></canvas>
       <div class="magnetization-display">
         <label>Magnetisation:</label>
-        <span class="control-value" id="magVal">0.00</span>
+        <span class="control-value" id="magVal">0.000</span>
+      </div>
+      <div class="magnetization-display" id="rotatorMagDisplay" style="display: none;">
+        <label>M<sub>x</sub>:</label>
+        <span class="control-value" id="magXVal">0.000</span>
+        <label style="margin-left: 15px;">M<sub>y</sub>:</label>
+        <span class="control-value" id="magYVal">0.000</span>
       </div>
     </div>
   </div>
