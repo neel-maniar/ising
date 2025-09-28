@@ -86,7 +86,19 @@
           </span>
           and displayed as a graph alongside the lattice.
         </p>
+
+      <p>
+        <strong>Color Mapping in Rotator Model:</strong> In the XY/rotator model, each spin is represented by an angle \(\theta_i \in [0, 2\pi)\) radians. The color mapping transforms this angle to HSL hue space using \(\text{hue} = \frac{\theta_i}{2\pi} \times 360°\), with saturation=100% and lightness=50%. Specifically:
+        <br>• \(\theta = 0\) (spin vector \(\vec{s} = (1,0)\)) → <strong style="color:#ff0000;">Red (0°)</strong>
+        <br>• \(\theta = \frac{\pi}{3}\) (spin vector \(\vec{s} = (\frac{1}{2},\frac{\sqrt{3}}{2})\)) → <strong style="color:#ffff00;">Yellow (60°)</strong>
+        <br>• \(\theta = \frac{2\pi}{3}\) (spin vector \(\vec{s} = (-\frac{1}{2},\frac{\sqrt{3}}{2})\)) → <strong style="color:#00ff00;">Green (120°)</strong>
+        <br>• \(\theta = \pi\) (spin vector \(\vec{s} = (-1,0)\)) → <strong style="color:#00ffff;">Cyan (180°)</strong>
+        <br>• \(\theta = \frac{4\pi}{3}\) (spin vector \(\vec{s} = (-\frac{1}{2},-\frac{\sqrt{3}}{2})\)) → <strong style="color:#0000ff;">Blue (240°)</strong>
+        <br>• \(\theta = \frac{5\pi}{3}\) (spin vector \(\vec{s} = (\frac{1}{2},-\frac{\sqrt{3}}{2})\)) → <strong style="color:#ff00ff;">Magenta (300°)</strong>
+        <br>The local magnetization vector \(\vec{M}_{local} = \langle\cos\theta, \sin\theta\rangle\) determines color coherence: aligned spins produce uniform colors, while disordered spins create rainbow patterns.
+      </p>
       </div>
+
     </div>
 
     <!-- Usage Instructions -->
