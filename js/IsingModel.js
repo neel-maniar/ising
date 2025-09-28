@@ -7,6 +7,7 @@ class IsingModel {
     this.L = size;
     this.beta = 1 / temperature;
     this.modelType = modelType; // 'ising' or 'rotator'
+    this.algorithm = 'metropolis'; // 'metropolis' or 'wolff'
     this.boundary = "periodic";
     this.field = 0; // external magnetic field h
     this.indices = new Array(this.L * this.L);
@@ -76,15 +77,19 @@ class IsingModel {
   }
 
   /**
-   * Perform one Metropolis step
+   * Perform one Monte Carlo step using selected algorithm
    */
   metropolisStep() {
-    this.shuffleIndices();
-    
-    if (this.modelType === 'ising') {
-      this.isingMetropolisStep();
-    } else if (this.modelType === 'rotator') {
-      this.rotatorMetropolisStep();
+    if (this.algorithm === 'wolff' && this.modelType === 'ising' && Math.abs(this.field) > 1e-10) {
+      this.wolffStep();
+    } else {
+      this.shuffleIndices();
+      
+      if (this.modelType === 'ising') {
+        this.isingMetropolisStep();
+      } else if (this.modelType === 'rotator') {
+        this.rotatorMetropolisStep();
+      }
     }
   }
 
@@ -168,6 +173,83 @@ class IsingModel {
   }
 
   /**
+   * Wolff cluster algorithm for Ising model
+   */
+  wolffStep() {
+    // Only works for Ising model with non-zero field
+    if (this.modelType !== 'ising' || Math.abs(this.field) < 1e-10) return;
+    
+    // Probability of adding a neighbor to cluster
+    const pAdd = 1 - Math.exp(-2 * this.beta);
+    
+    // Choose random starting site
+    const startIdx = Math.floor(Math.random() * (this.L * this.L));
+    const startSpin = this.lattice[startIdx];
+    
+    // Build cluster using breadth-first search
+    const cluster = new Set();
+    const stack = [startIdx];
+    cluster.add(startIdx);
+    
+    while (stack.length > 0) {
+      const currentIdx = stack.pop();
+      const i = Math.floor(currentIdx / this.L);
+      const j = currentIdx % this.L;
+      
+      // Check all neighbors
+      const neighbors = [
+        { i: i + 1, j: j },
+        { i: i - 1, j: j },
+        { i: i, j: j + 1 },
+        { i: i, j: j - 1 }
+      ];
+      
+      for (const neighbor of neighbors) {
+        const neighborIdx = this.getNeighborIndex(neighbor.i, neighbor.j);
+        
+        // Skip if neighbor is already in cluster or out of bounds
+        if (neighborIdx === -1 || cluster.has(neighborIdx)) continue;
+        
+        // Add to cluster if same spin and probability test passes
+        if (this.lattice[neighborIdx] === startSpin && Math.random() < pAdd) {
+          cluster.add(neighborIdx);
+          stack.push(neighborIdx);
+        }
+      }
+    }
+    
+    // Calculate energy change for cluster flip due to external field
+    let energyChange = 0;
+    for (const idx of cluster) {
+      energyChange += 2 * this.lattice[idx] * this.field;
+    }
+    
+    // Accept cluster flip with Metropolis criterion
+    if (energyChange <= 0 || Math.random() < Math.exp(-this.beta * energyChange)) {
+      // Flip entire cluster
+      for (const idx of cluster) {
+        this.lattice[idx] *= -1;
+      }
+    }
+  }
+
+  /**
+   * Get neighbor index with boundary conditions
+   */
+  getNeighborIndex(i, j) {
+    if (this.boundary === "periodic") {
+      const wrappedI = ((i + this.L) % this.L);
+      const wrappedJ = ((j + this.L) % this.L);
+      return wrappedI * this.L + wrappedJ;
+    } else if (this.boundary === "fixedUp" || this.boundary === "fixedDown") {
+      if (i < 0 || i >= this.L || j < 0 || j >= this.L) {
+        return -1; // Out of bounds
+      }
+      return i * this.L + j;
+    }
+  }
+
+  /**
    * Calculate magnetization
    */
   calculateMagnetization() {
@@ -226,6 +308,10 @@ class IsingModel {
 
   setField(field) {
     this.field = field;
+  }
+
+  setAlgorithm(algorithm) {
+    this.algorithm = algorithm;
   }
 
   getLattice() {

@@ -143,6 +143,13 @@ class SimulationController {
     return this;
   }
 
+  setAlgorithm(algorithm) {
+    if (this.model) {
+      this.model.setAlgorithm(algorithm);
+    }
+    return this;
+  }
+
   /**
    * Get current model state
    */

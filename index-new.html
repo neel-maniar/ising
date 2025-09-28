@@ -89,6 +89,19 @@
         <p>
           <strong>Uncertainty Bounds:</strong> The magnetization graph displays uncertainty bounds (shown as a light red shaded area) that represent the statistical fluctuations in magnetization over a rolling window of recent measurements. These bounds are calculated as \( M_{mean} \pm \sigma_M \), where \( \sigma_M \) is the standard deviation of magnetization within the window. The bounds help visualize the natural thermal fluctuations and become wider near phase transitions where the system exhibits larger statistical variations.
         </p>
+        <p>
+          <strong>Wolff Cluster Algorithm:</strong> An alternative to single-spin Metropolis updates, the Wolff algorithm builds clusters of aligned spins and flips entire clusters together. Starting from a random spin, it probabilistically adds neighboring spins of the same orientation to a cluster using probability \( P_{add} = 1 - e^{-2\beta J} \), then flips the entire cluster. This dramatically reduces critical slowing down near phase transitions, making equilibration much faster at low temperatures where spins are highly correlated. However, it only works for the Ising model (not the rotator model) and requires \( h \neq 0 \).
+        </p>
+        <p>
+          <strong>Field Requirement:</strong> The Wolff algorithm requires a non-zero external field \( h \neq 0 \) to prevent unphysical rapid switching between degenerate ground states. When \( h = 0 \), the system has two equivalent states (all spins up or down) and Wolff clusters can cause the entire lattice to flip back and forth rapidly - behavior not observed in real magnets. A small field breaks this degeneracy and allows stable magnetization, mimicking realistic conditions where perfect \( h = 0 \) never occurs due to environmental fields, defects, or sample geometry.
+        </p>
+        <p>
+          <strong>Critical Slowing Down:</strong> Near phase transitions, the system develops long-range correlations where spins become correlated over distances much larger than the lattice spacing. With single-spin Metropolis updates, it takes an exponentially long time (\(\propto L^z\) with \(z \approx 2\)) for information to propagate across these correlation lengths, causing the system to get "stuck" in metastable states. The autocorrelation time \(\tau\) diverges as:
+          <span style="display:block; text-align:center; margin: 10px 0;">
+            \( \tau \propto \xi^z \propto |T - T_c|^{-\nu z} \)
+          </span>
+          where \(\xi\) is the correlation length and \(\nu \approx 1\) is the critical exponent. Wolff's cluster updates solve this by flipping correlated regions together, reducing the dynamic critical exponent from \(z \approx 2\) to \(z \approx 0\), making equilibration time nearly independent of system size.
+        </p>
 
       <p>
         <strong>Color Mapping in Rotator Model:</strong> In the XY/rotator model, each spin is represented by an angle \(\theta_i \in [0, 2\pi)\) radians. The color mapping transforms this angle to HSL hue space using \(\text{hue} = \frac{\theta_i}{2\pi} \times 360°\), with saturation=100% and lightness=50%. Specifically:
@@ -147,6 +160,18 @@
           <label><input type="radio" name="model" value="ising" checked> Ising</label>
           <label><input type="radio" name="model" value="rotator"> Rotator (XY)</label>
         </div>
+      </div>
+
+      <div class="control-group">
+        <label>Algorithm:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="algorithm" value="metropolis" checked> Metropolis</label>
+          <label><input type="radio" name="algorithm" value="wolff"> Wolff Cluster</label>
+        </div>
+      </div>
+
+      <div class="control-group" id="wolffNotification" style="display: none; color: #e67e22; font-size: 0.9em; font-style: italic;">
+        ⚠️ Wolff algorithm disabled for h = 0. See Simulation Details for explanation.
       </div>
 
       <div class="control-group">

@@ -168,6 +168,12 @@ class IsingApp {
         
         // Clear the graph when changing model types
         this.graph.clear();
+      })
+      .on('algorithmChange', (algorithm) => {
+        this.worker.postMessage({
+          type: 'setAlgorithm',
+          data: { algorithm }
+        });
       });
   }
 

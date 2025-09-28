@@ -16,6 +16,10 @@ class UIController {
     this.cacheElements();
     this.setupEventListeners();
     this.setupAccordions();
+    
+    // Initial check for Wolff notification
+    setTimeout(() => this.updateWolffNotification(), 0);
+    
     return this;
   }
 
@@ -26,7 +30,7 @@ class UIController {
     const elementIds = [
       'temp', 'tempVal', 'field', 'fieldVal', 
       'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal',
-      'rollingMeanVal', 'rollingStdVal'
+      'rollingMeanVal', 'rollingStdVal', 'wolffNotification'
     ];
     
     elementIds.forEach(id => {
@@ -35,6 +39,7 @@ class UIController {
     
     this.elements.boundaryRadios = document.querySelectorAll('input[name="boundary"]');
     this.elements.modelRadios = document.querySelectorAll('input[name="model"]');
+    this.elements.algorithmRadios = document.querySelectorAll('input[name="algorithm"]');
   }
 
   /**
@@ -52,6 +57,7 @@ class UIController {
     this.elements.field.addEventListener('input', () => {
       const field = parseFloat(this.elements.field.value);
       this.elements.fieldVal.textContent = field.toFixed(2);
+      this.updateWolffNotification();
       this.triggerCallback('fieldChange', field);
     });
 
@@ -78,6 +84,18 @@ class UIController {
           if (radio.checked) {
             this.updateModelDisplay(radio.value);
             this.triggerCallback('modelTypeChange', radio.value);
+          }
+        });
+      });
+    }
+
+    // Algorithm radios
+    if (this.elements.algorithmRadios) {
+      this.elements.algorithmRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.checked) {
+            this.updateWolffNotification();
+            this.triggerCallback('algorithmChange', radio.value);
           }
         });
       });
@@ -157,6 +175,19 @@ class UIController {
   }
 
   /**
+   * Update Wolff notification visibility based on current settings
+   */
+  updateWolffNotification() {
+    const isWolffSelected = document.querySelector('input[name="algorithm"]:checked')?.value === 'wolff';
+    const fieldValue = Math.abs(parseFloat(this.elements.field?.value || 0));
+    const shouldShow = isWolffSelected && fieldValue < 1e-10;
+    
+    if (this.elements.wolffNotification) {
+      this.elements.wolffNotification.style.display = shouldShow ? 'block' : 'none';
+    }
+  }
+
+  /**
    * Get current control values
    */
   getCurrentValues() {
@@ -165,7 +196,8 @@ class UIController {
       field: parseFloat(this.elements.field.value),
       speed: parseInt(this.elements.speed.value),
       boundary: document.querySelector('input[name="boundary"]:checked')?.value || 'periodic',
-      modelType: document.querySelector('input[name="model"]:checked')?.value || 'ising'
+      modelType: document.querySelector('input[name="model"]:checked')?.value || 'ising',
+      algorithm: document.querySelector('input[name="algorithm"]:checked')?.value || 'metropolis'
     };
   }
 
@@ -209,6 +241,11 @@ class UIController {
         radio.checked = true;
         this.updateModelDisplay(values.modelType);
       }
+    }
+    
+    if (values.algorithm !== undefined) {
+      const radio = document.querySelector(`input[name="algorithm"][value="${values.algorithm}"]`);
+      if (radio) radio.checked = true;
     }
   }
 }

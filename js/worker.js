@@ -43,6 +43,9 @@ class IsingWorker {
       case 'setModelType':
         this.controller.setModelType(data.modelType);
         break;
+      case 'setAlgorithm':
+        this.controller.setAlgorithm(data.algorithm);
+        break;
       default:
         console.warn('Unknown message type:', type);
     }
