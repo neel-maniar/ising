@@ -17,8 +17,11 @@ class UIController {
     this.setupEventListeners();
     this.setupAccordions();
     
-    // Initial check for Wolff notification
-    setTimeout(() => this.updateWolffNotification(), 0);
+    // Initial check for Wolff notifications
+    setTimeout(() => {
+      this.updateWolffNotification();
+      this.updateWolffNotification2();
+    }, 0);
     
     return this;
   }
@@ -30,7 +33,7 @@ class UIController {
     const elementIds = [
       'temp', 'tempVal', 'field', 'fieldVal', 
       'speed', 'speedVal', 'fpsVal', 'magVal', 'magXVal', 'magYVal',
-      'rollingMeanVal', 'rollingStdVal', 'wolffNotification'
+      'rollingMeanVal', 'rollingStdVal', 'wolffNotification', 'wolffNotification2'
     ];
     
     elementIds.forEach(id => {
@@ -58,6 +61,7 @@ class UIController {
       const field = parseFloat(this.elements.field.value);
       this.elements.fieldVal.textContent = field.toFixed(2);
       this.updateWolffNotification();
+      this.updateWolffNotification2();
       this.triggerCallback('fieldChange', field);
     });
 
@@ -83,6 +87,7 @@ class UIController {
         radio.addEventListener('change', () => {
           if (radio.checked) {
             this.updateModelDisplay(radio.value);
+            this.updateWolffNotification2();
             this.triggerCallback('modelTypeChange', radio.value);
           }
         });
@@ -95,6 +100,7 @@ class UIController {
         radio.addEventListener('change', () => {
           if (radio.checked) {
             this.updateWolffNotification();
+            this.updateWolffNotification2();
             this.triggerCallback('algorithmChange', radio.value);
           }
         });
@@ -184,6 +190,16 @@ class UIController {
     
     if (this.elements.wolffNotification) {
       this.elements.wolffNotification.style.display = shouldShow ? 'block' : 'none';
+    }
+  }
+
+  updateWolffNotification2() {
+    const isWolffSelected = document.querySelector('input[name="algorithm"]:checked')?.value === 'wolff';
+    const ModelTypeIsRotator = document.querySelector('input[name="model"]:checked')?.value === 'rotator';
+    const shouldShow = isWolffSelected && ModelTypeIsRotator;
+    
+    if (this.elements.wolffNotification2) {
+      this.elements.wolffNotification2.style.display = shouldShow ? 'block' : 'none';
     }
   }
 
